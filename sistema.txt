@@ -9,8 +9,8 @@ Edge Case :
 2. Conflicto de write-write en la matrícula. 2 personas se matriculan al mismo tiempo y el sistema matricula a ambas incluso si se pasan las vacantes disponibles.
 3. Cierran un salon y te mueven a otro salón, generando conflicto con otros cursos.
 
-REquirimientos:
+Requirimientos:
 
-1. requiero un sistema que almacene los datos de alumnos, docentes y cursos para X institución, el cual tendrá un identificador único.
+1. requiero un sistema que almacene los datos de alumnos, docentes y cursos para X institución, el cual tendrá un identificador único por cada registro.
 2. ⁠Requiero la generación automática del consolidado de matrícula 
 3. ⁠Requiero un sistema en tiempo real para la asignación de horario y secciones
