@@ -4,3 +4,4 @@
 2. Aarón Timaná Castro
 3. Yesenia Valero Perez
 4. Gonzalo Suárez
+5. Piero Guerrero Jimenez
