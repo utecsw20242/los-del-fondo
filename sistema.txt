@@ -11,6 +11,6 @@ Edge Case :
 
 Requirimientos:
 
-1. requiero un sistema que almacene los datos de alumnos, docentes y cursos para X institución, el cual tendrá un identificador único por cada registro.
+1. Requiero un sistema que almacene los datos de alumnos, docentes y cursos para cualquier institución, el cual tendrá un identificador único por cada registro.
 2. ⁠Requiero la generación automática del consolidado de matrícula 
 3. ⁠Requiero un sistema en tiempo real para la asignación de horario y secciones
