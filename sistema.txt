@@ -1,8 +1,10 @@
 Sistema de Matrícula 
 Use Case :
-
-
-
+1.Escoger cursos 
+2.Elegir horarios 
+3.
 
 
 Edge Case :
+1.
+2.
