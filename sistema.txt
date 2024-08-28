@@ -6,5 +6,5 @@ Use Case :
 
 
 Edge Case :
-1.
-2.
+1. Entrar al sistema de matrícula después de que acabe el turno.
+2. Conflicto de write-write en la matrícula. 2 personas se matriculan al mismo tiempo y el sistema matricula a ambas incluso si se pasan las vacantes disponibles.
