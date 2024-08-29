@@ -1,0 +1,55 @@
+Integrantes: 
+Alonso RodrÍguez ~ 202220266
+Yesenia Valero ~  202120584
+Jose Bojorquez - 201910004
+Gonzalo Suárez ~ 201910306
+Piero Guerrero  ~ 202210505
+Aarón Timaná ~  202220350
+
+ACTIVIDAD 1 
+1.Requerimientos Funcionales:
+
+1.1 Must Have 
+-  Permite poder subir planos en formato de imagen.
+- Escanea los planos verificando que se cumplan las normas .
+- Retorna un informe sobre el registro del plano.
+- Permitir que los usuarios se registren y gestionen su perfil/cuenta .
+- El usuario puede calificar la revisión.
+- Notificaciones sobre las actualizaciones o nuevo contenido en el portal.
+
+1.2 Nice To Have 
+
+- El usuario pueda ingresar su propia descripción del plano.
+- Apartado con la opción para poder pagar la suscripción a la web.
+- Dar la opción al usuario de agrupar múltiples planos bajo un mismo proyecto
+
+
+2. Requerimientos no funcionales:
+2.1 Must Have:
+
+Se debe entrenar un modelo de reconocimiento de imágenes para analizar los planos de arquitectura.
+Se debe entrenar un LLM para comparar las características del plano con la normativa.
+El sistema de la aplicación web debe tener disponibilidad las 24 horas del día, es decir, estar desplegado en varios datacenters en la nube.
+Debe ser capaz de recibir una alta demanda de peticiones (no cuello de botella)
+El sistema debe ser compatible con los navegadores y diversos sistemas operativos en el mercado actual.
+La base de datos sea ACID.
+
+2.2 Nice To Have:
+
+- Actualización automática de normas a seguir.
+- El reporte contenga distintas secciones para separar las correcciones en base a la probabilidad de acierto.
+- Bajo costo de recursos computacionales de los modelos de LLM.
+- Código bien documentado.
+- Código limpio y sin repetición.
+
+ACTIVIDAD 2 
+
+Usuario modelo: Revisor Urbano
+
+Nombre: Graciela Pérez
+
+Características: Más de 40 años de experiencia en el sector inmobiliario, responsable, impaciente (quiere todo para ayer) y dispuesta a probar nuevas tecnologías.
+
+Historia: En el año 2019, esta arquitecta terminó el curso de capacitación para convertirse en una revisora urbana. Esta fue su oportunidad de iniciar su propia empresa: “Zeus Revisores Urbanos”. Pero en los últimos años, esta empresa empezó a generarle problemas. Debido a su edad, las largas jornadas de trabajo como revisora están empezando a afectar su salud. Ella desearía tener algún software que acorte los tiempos de revisión, sin comprometer la calidad, para así reducir su carga laboral.
+
+
