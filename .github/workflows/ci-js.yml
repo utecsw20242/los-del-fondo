@@ -13,10 +13,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Cambia la versión si es necesario
+          node-version: '16'  # Cambiar la versión si es necesario
 
       - name: Install dependencies
         run: npm install
 
       - name: Run ESLint
-        run: npx eslint "frontend/**/*.js"  # Cambia esta ruta según la estructura de tu proyecto
+        run: npx eslint "frontend/*.js"  # Cambia esta ruta según la estructura de tu proyecto
