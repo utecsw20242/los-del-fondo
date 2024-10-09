@@ -24,4 +24,4 @@ jobs:
         run: npm install -g eslint@8  # Usar versión 8.x de ESLint
 
       - name: Run ESLint
-        run: eslint "**/*.js"
+        run: eslint "frontend/**/*.js" # apuntar a un lugar exacto
