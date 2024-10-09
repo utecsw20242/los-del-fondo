@@ -1,4 +1,4 @@
-name: CI for JavaScript #integracion continua para JS
+name: CI Lint
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # ajustar la versión según sea necesario
+          node-version: '16'  # Versión de Node.js
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install ESLint globally
+        run: npm install -g eslint
 
-      - name: Run JSLint
-        run: npm run lint
+      - name: Run ESLint
+        run: eslint "**/*.js"  # Revisa todos los archivos .js en el repositorio
