@@ -1,4 +1,4 @@
-name: CI Lint
+name: Basic CI Lint
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Versión de Node.js
+          node-version: '16'
 
-      - name: Install ESLint globally
-        run: npm install -g eslint
+      - name: Install ESLint v8.x globally
+        run: npm install -g eslint@8  # Usar versión 8.x de ESLint
 
       - name: Run ESLint
-        run: eslint "**/*.js"  # Revisa todos los archivos .js en el repositorio
+        run: eslint "**/*.js"
