@@ -1,4 +1,4 @@
-name: CI for JavaScript
+name: CI for JavaScript #integracion continua para JS
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'  # Puedes ajustar la versión según sea necesario
+          node-version: '16'  # ajustar la versión según sea necesario
 
       - name: Install dependencies
         run: npm install
