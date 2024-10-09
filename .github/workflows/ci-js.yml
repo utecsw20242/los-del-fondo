@@ -22,6 +22,11 @@ jobs:
 
       - name: Install ESLint v8.x globally
         run: npm install -g eslint@8  # Usar versión 8.x de ESLint
-
+        
+      - run: npm install  # Instala las dependencias
+      - name: Run ESLint
+        run: eslint "frontend/**/*.js"
+        
       - name: Run ESLint
         run: eslint "frontend/**/*.js" # apuntar a un lugar exacto
+        working-directory: ./
