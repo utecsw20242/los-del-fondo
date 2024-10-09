@@ -1,32 +1,22 @@
-name: Basic CI Lint
+name: CI for JavaScript
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Check out the code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '16'  # Cambia la versión si es necesario
 
-      - name: Install ESLint v8.x globally
-        run: npm install -g eslint@8  # Usar versión 8.x de ESLint
-        
-      - run: npm install  # Instala las dependencias
+      - name: Install dependencies
+        run: npm install
+
       - name: Run ESLint
-        run: eslint "frontend/**/*.js"
-        
-      - name: Run ESLint
-        run: eslint "frontend/**/*.js" # apuntar a un lugar exacto
-        working-directory: ./
+        run: npx eslint "frontend/**/*.js"  # Cambia esta ruta según la estructura de tu proyecto
