@@ -4,3 +4,15 @@ services:
   backend:
     build: ./backend
     image: swpiergo121/los_del_fondo_backend
+  frontend:
+    build:
+      context: .
+      dockerfile: ./.docker/dev/Dockerfile
+      restart: unless-stopped
+      volumes:
+        - ".:/app"
+      ports:
+        - 3000:3000
+      command: >
+        bash -c "cp -rfu /cache/node_modules/. /app/node_modules/
+        && npm start"
