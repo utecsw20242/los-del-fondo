@@ -1,0 +1,6 @@
+version: "3.3"
+
+services:
+  backend:
+    build: ./backend
+    image: swpiergo121/los_del_fondo_backend

@@ -1,0 +1,5 @@
+boto3
+mysql-connector-python
+Django
+ultralytics
+tesseract
