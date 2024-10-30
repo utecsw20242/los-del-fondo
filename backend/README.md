@@ -1,6 +1,6 @@
 # Proyecto FastAPI con MySQL
 
-Este proyecto utiliza FastAPI junto con MySQL para crear una API de ejemplo. A continuación, se muestran los pasos necesarios para configurar el entorno y las dependencias.
+Este proyecto utiliza FastAPI junto con MySQL para crear una API. A continuación, se muestran los pasos necesarios para configurar el entorno y las dependencias.
 
 ## Requisitos Previos
 
