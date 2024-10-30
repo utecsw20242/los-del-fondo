@@ -11,9 +11,9 @@ Este proyecto utiliza FastAPI junto con MySQL para crear una API. A continuació
 python --version
 
 ## Ingresar al entorno virtual
-python -m venv env
-source env/bin/activate  # En macOS/Linux
-env\Scripts\activate      # En Windows
+- python -m venv env
+- source env/bin/activate  # En macOS/Linux
+- env\Scripts\activate      # En Windows
 
 ## Instalacion de dependencias 
 pip install -r requirements.txt
