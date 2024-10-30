@@ -13,7 +13,7 @@ Este proyecto utiliza FastAPI junto con MySQL para crear una API. A continuació
 ## Ingresar al entorno virtual
 - python -m venv env
 - source env/bin/activate  # En macOS/Linux
-- env\Scripts\activate      # En Windows
+- .\env\Scripts\activate      # En Windows
 
 ## Instalacion de dependencias 
 - pip3 install 'pydantic[email]'
