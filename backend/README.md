@@ -16,7 +16,8 @@ Este proyecto utiliza FastAPI junto con MySQL para crear una API. A continuació
 - env\Scripts\activate      # En Windows
 
 ## Instalacion de dependencias 
-- pip install -r requirements.txt
+- pip3 install 'pydantic[email]'
+- pip3 install -r requirements.txt
 
 ## Ejecución de API
 - uvicorn main:app --reload
