@@ -3,3 +3,4 @@ uvicorn
 sqlalchemy
 mysql-connector-python
 pedantic
+'pedantic[email]'
