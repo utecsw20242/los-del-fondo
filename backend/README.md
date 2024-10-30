@@ -8,7 +8,7 @@ Este proyecto utiliza FastAPI junto con MySQL para crear una API. A continuació
 - `pip` para gestionar paquetes de Python
 
 ## Asegurar tener instalado 'python3'
-python --version
+- python --version
 
 ## Ingresar al entorno virtual
 - python -m venv env
@@ -16,7 +16,7 @@ python --version
 - env\Scripts\activate      # En Windows
 
 ## Instalacion de dependencias 
-pip install -r requirements.txt
+- pip install -r requirements.txt
 
 ## Ejecución de API
-uvicorn main:app --reload
+- uvicorn main:app --reload
