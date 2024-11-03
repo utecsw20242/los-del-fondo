@@ -3,4 +3,7 @@ uvicorn
 sqlalchemy
 mysql-connector-python
 pedantic
+ultralytics
+opencv-python-headless
+numpy
 pedantic[email]
