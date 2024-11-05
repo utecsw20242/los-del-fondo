@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>YOLOSeg with ONNX.js</title>
+    <style>
+      canvas {
+        border: 1px solid black;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>YOLOSeg Image Segmentation with ONNX.js</h1>
+    <input type="file" id="image-upload" accept="image/*" />
+    <br /><br />
+    <canvas id="output-canvas"></canvas>
+    <script>
+      import { Tensor, InferenceSession } from "onnxjs";
+    </script>
+    <script>
+      let model;
+
+      // Load the ONNX model
+      async function loadModel() {
+        model = new InferenceSession();
+        await model.loadModel("blueprint.onnx"); // Path to your ONNX model
+        console.log("Model loaded!");
+      }
+
+      // Preprocess image for input to the model
+      function preprocessImage(image) {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+        const width = 416;
+        const height = 416;
+        canvas.width = width;
+        canvas.height = height;
+
+        // Resize the image to 416x416 and draw it onto the canvas
+        ctx.drawImage(image, 0, 0, width, height);
+
+        // Convert canvas to a tensor
+        const tensor = tf.browser
+          .fromPixels(canvas)
+          .toFloat()
+          .expandDims(0)
+          .div(tf.scalar(255)); // Normalize to [0, 1]
+        return tensor;
+      }
+
+      // Run the model and process results
+      async function runInference(tensor) {
+        // Create an ONNX tensor
+        const input = new Tensor(tensor.dataSync(), "float32", tensor.shape);
+        const output = await model.run([input]);
+
+        // The model output is usually a tensor, let's extract it
+        const segmentationMask = output.values().next().value;
+
+        return segmentationMask;
+      }
+
+      // Function to display the segmented image on a canvas
+      function displaySegmentation(originalImage, mask) {
+        const canvas = document.getElementById("output-canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = originalImage.width;
+        canvas.height = originalImage.height;
+
+        // Draw the original image
+        ctx.drawImage(originalImage, 0, 0);
+
+        // Here you would need to do some post-processing on `mask`
+        // For demonstration, assume the mask is already in the correct format (just an overlay)
+        const maskImageData = ctx.createImageData(
+          originalImage.width,
+          originalImage.height
+        );
+        // Process and apply the mask to `maskImageData`
+        // You can apply different colors to represent the mask
+
+        // Draw the segmentation mask (simplified example)
+        ctx.putImageData(maskImageData, 0, 0);
+      }
+
+      // Event handler for image upload
+      document
+        .getElementById("image-upload")
+        .addEventListener("change", async (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const img = new Image();
+            img.onload = async () => {
+              // Preprocess the image for the model
+              const tensor = preprocessImage(img);
+
+              // Run inference and get the segmentation mask
+              const mask = await runInference(tensor);
+
+              // Display the results
+              displaySegmentation(img, mask);
+            };
+            img.src = URL.createObjectURL(file);
+          }
+        });
+
+      // Load the model when the page loads
+      loadModel();
+    </script>
+  </body>
+</html>
