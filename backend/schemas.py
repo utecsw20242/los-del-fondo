@@ -21,7 +21,7 @@ class UsuarioInDB(UsuarioBase):
     id: str
 
     class Config:
-        orm_mode = True
+        from_atributes = True
 
 
 class PlanoBase(BaseModel):
