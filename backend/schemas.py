@@ -4,10 +4,12 @@ from pydantic import BaseModel, EmailStr, constr
 
 class UsuarioBase(BaseModel):
     nombre: constr(max_length=50)
-    apellido: constr(max_length=50)
-    telefono: constr(max_length=20)
+    apellidoM: constr(max_length=25)  
+    apellidoP: constr(max_length=25)  
+    telefono: constr(max_length=10)  
     correo: EmailStr
-
+    contraseña: constr(max_length=20)  
+    edad: int  
 
 class UsuarioCreate(UsuarioBase):
     pass
