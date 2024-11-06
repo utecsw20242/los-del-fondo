@@ -5,11 +5,11 @@ from pydantic import BaseModel
 
 class FileBase(BaseModel):
     # We are assuming the image is in base 64
-    coded_image: str
+    coded_file: str
 
 
 class FileData(BaseModel):
     windows: int
     doors: int
     texts: int
-    annotated_image: str
+    annotated_file: str

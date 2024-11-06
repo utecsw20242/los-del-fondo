@@ -14,7 +14,7 @@ def apply_model(coded_image):
     decoded_image = base64.b64decode(coded_image)
     image = Image.open(BytesIO(decoded_image))
     image_numpy = np.array(image)
-    result = model.predict(image_numpy, conf=0.5, show_labels=False, save=True)
+    result = model.predict(image_numpy, conf=0.5, show_labels=False)
     classes = result[0].boxes.cls.numpy()
     matches = {}
     names = result[0].names
@@ -23,8 +23,6 @@ def apply_model(coded_image):
 
     for i in classes:
         matches[names[int(i)] + "s"] += 1
-
-    image = cv2.imdecode(image_numpy, cv2.IMREAD_COLOR)
 
     colors = {"window": (255, 0, 0), "text": (40, 40, 213), "door": (0, 153, 0)}
     for i, box in enumerate(result[0].boxes.xyxy):
@@ -35,14 +33,16 @@ def apply_model(coded_image):
 
         # Draw the bounding box
         cv2.rectangle(
-            image,
+            image_numpy,
             (x1, y1),
             (x2, y2),
             colors[label],
             4,
         )
 
-    _, buffer = cv2.imencode(".png", image)
-    annotated_image_coded = base64.b64encode(buffer).decode("utf-8")
+    image = Image.fromarray(image_numpy)
+    buffer = BytesIO()
+    image.save(buffer, format="PNG")
+    annotated_image_coded = base64.b64encode(buffer.getvalue()).decode("utf-8")
 
     return matches, annotated_image_coded
