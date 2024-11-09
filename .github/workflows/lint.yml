@@ -16,7 +16,11 @@ jobs:
           node-version: '16' 
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd containers/frontend/dockerize-react  # Ir al directorio donde está package.json
+          npm install
 
       - name: Run ESLint
-        run: npx eslint "frontend/*.js"  
+        run: |
+          cd containers/frontend/dockerize-react  # Ejecutar ESLint en el mismo directorio
+          npx eslint "*.js" 
