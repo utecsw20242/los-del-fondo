@@ -11,11 +11,11 @@ const users = require("./modules/users/routes");
 const projects = require("./modules/projects/routes");
 const files = require("./modules/files/routes");
 const error = require("./network/errors");
-const { morganMiddleware } = require("./logs/logs");
+// const { morganMiddleware } = require("./logger/logs");
 
 const app = express();
 
-app.use(morganMiddleware);
+// app.use(morganMiddleware);
 
 // MongoDB Connection
 connectToMongoDB();
