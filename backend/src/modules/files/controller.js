@@ -1,22 +1,25 @@
 const path = require("path");
-const { ObjectId } = require('mongoose').Types;
+const { ObjectId } = require("mongoose").Types;
 const multer = require("multer");
 const { File, Project } = require("../../DB/mongodb");
 const fs = require("fs");
-const { exec } = require('child_process');
-const util = require('util'); 
+const { exec } = require("child_process");
+const util = require("util");
 const execPromise = util.promisify(exec);
 const allowedTypes = /jpeg|jpg|png/;
+const { logger } = require("../../logger/logs");
 
 const fileFilter = (req, file, cb) => {
-  if(!file)return cb(new Error('No file uploaded'));
+  if (!file) return cb(new Error("No file uploaded"));
   const mimeType = allowedTypes.test(file.mimetype);
-  const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  const extName = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase(),
+  );
   if (mimeType && extName) {
     return cb(null, true);
   }
   const error = new Error("Only image files (jpeg, jpg, png) are allowed");
-  error.code = 'INVALID_FILE_TYPE';
+  error.code = "INVALID_FILE_TYPE";
   return cb(error);
 };
 
@@ -25,22 +28,23 @@ const storage = multer.diskStorage({
     const { username } = req.user;
     if (!username) {
       const error = new Error("Username is required");
-      error.code = 'USERNAME_REQUIRED';
+      error.code = "USERNAME_REQUIRED";
       return cb(error);
     }
     const userDir = path.join(__dirname, "../../../uploads", username);
     try {
       fs.mkdirSync(userDir, { recursive: true });
       console.log(`creating user directory: ${userDir}`);
+      logger.info(`creating user directory: ${userDir}`);
     } catch (err) {
       const error = new Error(`Error creating user directory: ${err.message}`);
-      error.code = 'DIRECTORY_CREATION_FAILED';
+      error.code = "DIRECTORY_CREATION_FAILED";
       return cb(error);
     }
     cb(null, userDir);
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     cb(null, `${uniqueSuffix}-${file.originalname}`);
   },
 });
@@ -67,15 +71,23 @@ exports.addFile = async (req, res) => {
     try {
       const { stdout, stderr } = await execPromise(pythonCommand);
       if (stderr) {
+        logger.error("Error processing image with AI service:");
         console.error("Error processing image with AI service:", stderr);
-        return res.status(500).json({ message: "Error processing image with AI service", error: stderr });
+        return res.status(500).json({
+          message: "Error processing image with AI service",
+          error: stderr,
+        });
       }
       let result;
       try {
         result = JSON.parse(stdout);
       } catch (parseError) {
         console.error("Error parsing Python response:", parseError);
-        return res.status(500).json({ message: "Error parsing AI processing result", error: parseError.message });
+        logger.error(`Error parsing Python response: ${parseError}`);
+        return res.status(500).json({
+          message: "Error parsing AI processing result",
+          error: parseError.message,
+        });
       }
 
       const { matches, annotated_image_coded } = result;
@@ -91,7 +103,7 @@ exports.addFile = async (req, res) => {
         doorNumber,
         windowNumber,
         textNumber,
-        image: annotated_image_coded, 
+        image: annotated_image_coded,
         aiContent,
       });
 
@@ -99,22 +111,29 @@ exports.addFile = async (req, res) => {
       await Project.findByIdAndUpdate(
         projectObjectId,
         { $push: { files: newFile._id } },
-        { new: true }
+        { new: true },
       );
-        return res.status(201).json({ message: "File added successfully", file: newFile });
-      } catch (error) {
-        console.error(`Error executing Python script: ${error}`);
-        return res.status(500).json({ message: "Error processing image with AI service", error: error.message });
-      }
+      return res
+        .status(201)
+        .json({ message: "File added successfully", file: newFile });
     } catch (error) {
-      console.log("Error adding file:", error);
-      res.status(500).json({ message: "Error adding file", error });
+      console.error(`Error executing Python script: ${error}`);
+      return res.status(500).json({
+        message: "Error processing image with AI service",
+        error: error.message,
+      });
     }
+  } catch (error) {
+    logger.error(`Error adding file: ${error}`);
+    console.log("Error adding file:", error);
+    res.status(500).json({ message: "Error adding file", error });
+  }
 };
 
 exports.getFileById = async (req, res) => {
   try {
     const { id } = req.params;
+    logger.info(`Accesing file with id: ${id}`);
     const file = await File.findById(id);
     if (!file) return res.status(404).json({ message: "File not found" });
     res.status(200).json({ file });
@@ -143,7 +162,10 @@ exports.updateFile = async (req, res) => {
         const { stdout, stderr } = await execPromise(pythonCommand);
         if (stderr) {
           console.error("Error processing image with AI service:", stderr);
-          return res.status(500).json({ message: "Error processing image with AI service", error: stderr });
+          return res.status(500).json({
+            message: "Error processing image with AI service",
+            error: stderr,
+          });
         }
 
         const result = JSON.parse(stdout);
@@ -156,14 +178,22 @@ exports.updateFile = async (req, res) => {
         updateData.aiContent = JSON.stringify(matches);
       } catch (error) {
         console.error("Error executing Python script:", error);
-        return res.status(500).json({ message: "Error processing image with AI service", error: error.message });
+        return res.status(500).json({
+          message: "Error processing image with AI service",
+          error: error.message,
+        });
       }
     }
 
-    const updatedFile = await File.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedFile) return res.status(404).json({ message: "File not found" });
+    const updatedFile = await File.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+    if (!updatedFile)
+      return res.status(404).json({ message: "File not found" });
 
-    res.status(200).json({ message: "File updated successfully", file: updatedFile });
+    res
+      .status(200)
+      .json({ message: "File updated successfully", file: updatedFile });
   } catch (error) {
     res.status(500).json({ message: "Error updating file", error });
   }
@@ -173,10 +203,17 @@ exports.updateSurname = async (req, res) => {
   try {
     const { id } = req.params;
     const { surname } = req.body;
-    if (!surname) return res.status(400).json({ message: "Surname is required" });
-    const updateFile = await File.findByIdAndUpdate(id, { surname }, { new: true });
+    if (!surname)
+      return res.status(400).json({ message: "Surname is required" });
+    const updateFile = await File.findByIdAndUpdate(
+      id,
+      { surname },
+      { new: true },
+    );
     if (!updateFile) return res.status(404).json({ message: "File not found" });
-    res.status(200).json({ message: "Surname updated successfully", file: updateFile });
+    res
+      .status(200)
+      .json({ message: "Surname updated successfully", file: updateFile });
   } catch (err) {
     res.status(500).json({ message: "Error updating surname", error });
   }
@@ -195,12 +232,15 @@ exports.updateStatus = async (req, res) => {
     const updatedFile = await File.findByIdAndUpdate(
       id,
       { status, latestStatusUpdate: Date.now() },
-      { new: true }
+      { new: true },
     );
 
-    if (!updatedFile) return res.status(404).json({ message: "File not found" });
+    if (!updatedFile)
+      return res.status(404).json({ message: "File not found" });
 
-    res.status(200).json({ message: "Status updated successfully", file: updatedFile });
+    res
+      .status(200)
+      .json({ message: "Status updated successfully", file: updatedFile });
   } catch (error) {
     res.status(500).json({ message: "Error updating status", error });
   }
