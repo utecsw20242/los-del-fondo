@@ -1,0 +1,119 @@
+@import '../variables.scss';
+
+.file-view {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem;
+  margin: 1rem;
+  background-color: #eaeaea;
+  border-radius: 10px;
+
+  .image {
+    padding: 1rem;
+    border: 1px solid #ccc;
+    background-color: white;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin: 1rem;
+
+    .info, .crud-buttons {
+      display: flex;
+      gap: 0.5rem;
+
+      button {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        border: none;
+        background-color: black;
+        color: white;
+        border-radius: 10px;
+
+        &:hover {
+          opacity: 0.8;
+        }
+      }
+    }
+  }
+
+  .ai-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    margin-top: 1rem;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+
+    p {
+      margin: 0;
+      color: #333;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border: none;
+      background-color: $black-wood;
+      color: white;
+      border-radius: 10px;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  // Responsive Adjustments
+  @media (max-width: 768px) {
+    padding: 1rem;
+    margin: 0.5rem;
+
+    .action-buttons {
+      flex-direction: column;
+      align-items: stretch;
+
+      .info, .crud-buttons {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      button {
+        padding: 0.5rem;
+      }
+    }
+
+    .ai-content {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+
+      button {
+        margin-top: 0.5rem;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+    margin: 0.5rem;
+
+    .action-buttons {
+      margin: 0.5rem 0;
+
+      button {
+        width: 100%;
+      }
+    }
+
+    .ai-content {
+      padding: 0.5rem;
+    }
+  }
+}  

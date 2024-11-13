@@ -1,0 +1,205 @@
+@import '../variables.scss';
+
+.browser {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  margin: 1rem;
+  padding: 1.5rem;
+  background-color: #eaeaea;
+  border-radius: 10px;
+
+  .search-bar {
+    display: flex;
+    gap: 0.5rem;
+    position: relative;
+
+    input {
+      flex: 1;
+      padding: 0.5rem;
+      border: 1px solid #ddd;
+      border-radius: 50px;
+      font-size: 1rem; // Make font size responsive
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.3s; 
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+
+    .sort-options {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      display: flex;
+      flex-direction: column; 
+
+      button {
+        color:black;
+        text-align: left;
+        border: none;
+        border-radius: 0;
+        padding: 0.5rem 1rem;
+        background: none;
+        border-bottom: 2px solid $black-wood;
+        cursor: pointer;
+
+        &:hover {
+          color: $black-wood;
+          border-radius: 0;
+        }
+      }
+    }
+  }
+
+  .folder-list {
+    overflow-x: hidden;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem; 
+
+    .overflow-container {
+      overflow-y: auto; // Enable vertical scroll
+      max-height: 400px; // Set maximum height (adjust as needed)
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem; // Space between folder items
+    }
+
+    .folder-item {
+      margin-bottom: 1rem;
+      transition: transform 0.8s;
+
+      &.add-animation { 
+        transform: translateX(100%);
+      }
+
+      .folder-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        input {
+          padding: 0.25rem;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+        }
+
+        button {
+          background: none;
+          border: none;
+          color: $black-wood;
+          cursor: pointer;
+
+          &:hover {
+            color: $clean-wood;
+          }
+        }
+      }
+
+      .folder-separator {
+        border: none;
+        border-top: 2px solid $clean-wood; // Adjust color as needed
+        margin: 0.5rem 0; // Add spacing above and below the line
+      }
+    }
+    button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      margin: 0 5px;
+      font-weight: bold;
+    }
+  }
+
+  .add-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      background-color: black;
+      color: white;
+      border: none;
+      border-radius: 10px; 
+      cursor: pointer;
+      transition: background-color 0.3s;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  // Media Queries for Responsiveness
+  @media (max-width: 768px) {
+    margin: 1rem;
+    gap: 1.5rem;
+
+    .search-bar {
+      flex-direction: column; // Stack elements in smaller screens
+
+      input {
+        width: 100%; // Make input full-width
+      }
+
+      button {
+        width: 100%; // Make button full-width
+        margin-top: 0.5rem; // Add spacing between input and button
+      }
+    }
+
+    .content {
+      gap: 1rem;
+
+      .folder-item {
+        flex-direction: column; // Stack folder item components
+      }
+    }
+
+    .add-buttons {
+      flex-direction: column; // Stack add buttons
+      gap: 1rem; // Increase gap for clarity
+    }
+  }
+
+  @media (max-width: 480px) {
+    margin: 0.5rem;
+    gap: 1rem;
+
+    .search-bar {
+      gap: 0.25rem;
+
+      input {
+        padding: 0.4rem; // Slightly reduce padding
+      }
+
+      button {
+        padding: 0.4rem; // Slightly reduce padding
+      }
+    }
+
+    .content {
+      gap: 0.5rem;
+
+      .folder-item {
+        margin-bottom: 0.5rem; // Reduce margin for folder items
+      }
+    }
+
+    .add-buttons {
+      gap: 0.5rem; // Adjust gap for buttons
+    }
+  }
+}

@@ -1,0 +1,17 @@
+# Node modules
+/node_modules
+
+# Environment variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Dependency directories
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Optional: ignore package-lock.json if you'd prefer not to track lock files
+package-lock.json

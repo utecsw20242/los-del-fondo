@@ -1,0 +1,87 @@
+@import '../variables.scss';
+.home {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: white;
+  
+    &__content {
+      text-align: center;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+  
+      h2 {
+        font-size: 1.5rem;
+        color: $clean-wood;
+        text-align: left;
+        margin-left: 20%;
+      }
+  
+      h1 {
+        font-size: 2.5rem;
+        color: #000;
+  
+        span {
+          color: $black-wood; 
+        }
+      }
+  
+      p {
+        color: #666;
+        margin-bottom: 1.5rem;
+      }
+  
+      .button-group {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin: 2rem 0;
+        
+        .btn {
+          padding: 0.75rem 1.5rem;
+          font-size: 1rem;
+          border-radius: 10px;
+          border: none;
+          cursor: pointer;
+          background-color: black;
+          color:white;
+  
+          &:hover {
+            background-color: $black-wood;
+            opacity: 0.8;
+          }
+        }
+      }
+  
+      .forgot-password {
+        color: blue;
+        font-size: 0.95rem;
+        cursor: pointer;
+        text-align: right;
+        margin-right: 10%;
+  
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+  
+
+  @media (min-width: 768px) {
+    .home__content {
+      max-width: 600px;
+  
+      .button-group {
+        display: flex;
+        align-items: center;
+        
+        .btn {
+          width: 350px;
+        }
+      }
+    }
+  }
+  

@@ -1,0 +1,39 @@
+@import '../variables.scss';
+.sidebar {
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
+    background-color: white; //#e7f3fe
+    border-right: 2px solid #ddd;
+
+    .user, .settings {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem 0;
+
+      img {
+        width: 40px;
+        height: 40px;
+        margin: 8px auto;
+        cursor: pointer;
+
+        &:hover{
+          filter: brightness(0) saturate(100%) invert(61%) sepia(35%) saturate(286%) hue-rotate(352deg) brightness(95%) contrast(85%);
+        }
+      }
+
+  
+      p {
+        cursor: pointer;
+        padding: 0.5rem;
+        &:hover {
+          background-color: #ddd;
+          border-radius: 4px;
+        }
+      }
+    }
+  }
+  

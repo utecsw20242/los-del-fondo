@@ -1,0 +1,75 @@
+@import '../variables.scss';
+
+.signup-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: white;
+
+  .form-content {
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 8px;
+
+    .input-group {
+      margin-bottom: 1rem;
+      
+      input {
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border: 1px solid $black-wood;
+        border-radius: 5px;
+        outline: none;
+        color: $black-wood;
+        background-color: white;
+
+        &::placeholder {
+          color: $black-wood;
+          opacity: 0.6;
+        }
+
+        &:focus {
+          border-color: $black-wood;
+          box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+  }
+
+  button {
+    width: 90%;
+    max-width: 300px;
+    padding: 0.75rem 1.5rem;
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: black;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+
+    &:hover {
+      background-color: $black-wood;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Responsive layout for larger screens
+@media (min-width: 768px) {
+  .signup-page {
+    .form-content {
+      max-width: 600px;
+    }
+    
+    button {
+      width: 350px;
+      align-self: center;
+    }
+  }
+}

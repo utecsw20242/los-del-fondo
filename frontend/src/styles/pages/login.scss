@@ -1,0 +1,98 @@
+@import '../variables.scss';
+
+.login-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: white;
+
+  .form-content {
+    width: 90%;
+    max-width: 500px;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
+
+    h2 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      color: $black-wood;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 1rem;
+      color: $black-wood;
+      text-align: left;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      border: 1px solid $black-wood;
+      border-radius: 5px;
+      outline: none;
+      color: $black-wood;
+      background-color: white;
+      margin-bottom: 1.5rem;
+
+      &::placeholder {
+        color: $black-wood;
+        opacity: 0.6;
+      }
+
+      &:focus {
+        border-color: $black-wood;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      }
+    }
+
+    .login-button {
+      width: 90%;
+      max-width: 300px;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background-color: black;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+
+      &:hover {
+        background-color: $black-wood;
+        opacity: 0.8;
+      }
+    }
+
+    .forgot-password {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: blue;
+      cursor: pointer;
+      text-align: right;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+// Responsive layout for larger screens
+@media (min-width: 768px) {
+  .login-page {
+    .form-content {
+      max-width: 600px;
+    }
+
+    .login-button {
+      width: 350px;
+      align-self: center;
+    }
+  }
+}
