@@ -10,31 +10,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # Configurar Node.js para el backend
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Ajusta la versión de Node.js según la que uses en el proyecto
+
+      # Instalar dependencias de Node.js
+      - name: Install Node.js dependencies
+        run: |
+          cd backend  # Cambia a la ruta donde están los archivos Node.js
+          npm install  # Instala las dependencias de Node.js
+
+      # Configurar Python (si aún necesitas esta parte)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'  # Cambia a la versión que uses
+          python-version: '3.10'  # Cambia la versión si es necesario
 
-      - name: Install dependencies for backend
+      # Instalar dependencias de Python para el backend
+      - name: Install dependencies for backend (Python)
         run: |
-          # Instalar dependencias del backend principal
-          cd backend
+          cd backend  # Asegúrate de estar en la carpeta correcta
           pip install -r requirements.txt
 
-      - name: Install dependencies for containers/backend
+      - name: Install dependencies for containers/backend (Python)
         run: |
-          # Instalar dependencias de containers/backend
           cd containers/backend
           pip install -r requirements.txt
 
-      - name: Install dependencies for modeloPlanos/server
+      - name: Install dependencies for modeloPlanos/server (Python)
         run: |
-          # Instalar dependencias de modeloPlanos/server
           cd modeloPlanos/server
           pip install -r requirements.txt
 
-      #- name: Run tests
-      #  run: |
-          # Ejecutar las pruebas unitarias
-      #    cd backend  # O la carpeta principal donde estén las pruebas
-      #    pytest  # O el comando que uses para ejecutar las pruebas
+      # Configurar variables de entorno
+      - name: Set up environment variables
+        run: |
+          echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> $GITHUB_ENV
+          echo "MYSQL_HOST=${{ secrets.MYSQL_HOST }}" >> $GITHUB_ENV
+          echo "MYSQL_USER=${{ secrets.MYSQL_USER }}" >> $GITHUB_ENV
+          echo "MYSQL_PASSWORD=${{ secrets.MYSQL_PASSWORD }}" >> $GITHUB_ENV
+          echo "MYSQL_DATABASE=${{ secrets.MYSQL_DATABASE }}" >> $GITHUB_ENV
+          echo "MONGODB_URI=${{ secrets.MONGODB_URI }}" >> $GITHUB_ENV
