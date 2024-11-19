@@ -1,14 +1,21 @@
-const request = require('supertest');
-const app = require('../backend/app'); //Verificar
-const mysqlMock = require('../  mocks/mysqlMock');
-const mongodbMock = require('../mocks/mongodbMock');
+// const request = require('supertest');
+const app = require("../backend/src/app"); //Verificar
+// const mysqlMock = require('../  mocks/mysqlMock');
+// const mongodbMock = require('../mocks/mongodbMock');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-jest.mock('../backend/src/DB/mysql', () => mysqlMock); 
-jest.mock('../backend/src/DB/mongodb', () => mongodbMock); 
+// jest.mock('../backend/src/DB/mysql', () => mysqlMock); 
+// jest.mock('../backend/src/DB/mongodb', () => mongodbMock); 
 
-
+jest.mock("../backend/src/DB/mongodb", () => {
+    const mongodbMock = require("./mocks/mongodbMock");
+    return mongodbMock;
+  });
+  jest.mock("../backend/src/DB/mysql", () => {
+    const mysqlMock = require("./mocks/mysqlMock");
+    return mysqlMock;
+  });
 
 describe('Users API', () => {
     afterEach(() => {

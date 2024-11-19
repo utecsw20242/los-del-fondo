@@ -1,13 +1,20 @@
-const request = require("supertest");
-const app = require("../../backend/src/app"); 
-const mongodbMock = require("../mocks/mongodbMock");
+// const request = require("supertest");
+const app = require("../backend/src/app"); 
+// const mongodbMock = require("../mocks/mongodbMock");
 
-jest.mock("../../backend/src/DB/mongodb", () => mongodbMock);
+jest.mock("../backend/src/DB/mongodb", () => {
+    const mongodbMock = require("./mocks/mongodbMock");
+    return mongodbMock;
+});
+jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
+    req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
+    next();
+  });
 
 describe("Files Routes", () => {
     describe("POST /:projectId/add", () => {
         it("should upload and add a file successfully", async () => {
-            mongodbMock.Project.findById.mockResolvedValue({ id: "projectId" });
+            mongodbMock.Project.findById.mockResolvedValue({ id: "projectId " });
             mongodbMock.File.create.mockResolvedValue({
                 id: "fileId",
                 surname: "Test File",
