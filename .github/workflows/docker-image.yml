@@ -1,0 +1,48 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - backend/**
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - backend/**    
+
+jobs:
+
+  build:
+    name: Build Docker image and push to repositories
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+  
+      - name: login to hub  
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: swpiergo121/los_del_fondo_backend:latest
+          # Below is how to do the automatic deployment.
+#      - name: deploying
+#        uses: appleboy/ssh-action@v0.1.8
+#        with:
+#          host: ${{ secrets.SSH_HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_KEY }}
+#          port: ${{ secrets.SSH_PORT }}
+#          script: |
+#            docker image pull swpiergo121/los_del_fondo_backend:latest
+#           docker container stop backend
+#            docker container rm backend
+#            docker container run -d --name backend -p 80:5000 swpiergo121/los_del_fondo_backend:
