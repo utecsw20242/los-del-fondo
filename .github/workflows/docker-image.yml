@@ -3,8 +3,12 @@ name: Docker Image CI
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - backend/**
   pull_request:
     branches: [ "main" ]
+    paths:
+      - backend/**    
 
 jobs:
 
@@ -25,20 +29,20 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ./backend
+          file: ./backend/Dockerfile
           push: true
-          tags: antonyanlinux/myapp:latest
-          
-      - name: deploying
-        uses: appleboy/ssh-action@v0.1.8
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_KEY }}
-          port: ${{ secrets.SSH_PORT }}
-          script: |
-            docker image pull antonyanlinux/myapp:latest
-            docker container stop my-container
-            docker container rm my-container
-            docker container run -d --name my-container -p 80:5000 antonyanlinux/myapp
-        
+          tags: swpiergo121/los_del_fondo_backend:latest
+          # Below is how to do the automatic deployment.
+#      - name: deploying
+#        uses: appleboy/ssh-action@v0.1.8
+#        with:
+#          host: ${{ secrets.SSH_HOST }}
+#          username: ${{ secrets.SSH_USER }}
+#          password: ${{ secrets.SSH_KEY }}
+#          port: ${{ secrets.SSH_PORT }}
+#          script: |
+#            docker image pull swpiergo121/los_del_fondo_backend:latest
+#           docker container stop backend
+#            docker container rm backend
+#            docker container run -d --name backend -p 80:5000 swpiergo121/los_del_fondo_backend:
