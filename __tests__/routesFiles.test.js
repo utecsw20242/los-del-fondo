@@ -1,21 +1,27 @@
-// const request = require("supertest");
-const app = require("../backend/src/app"); 
-// const mongodbMock = require("../mocks/mongodbMock");
+const request = require('../backend/node_modules/supertest');
+const app = require("../backend/src/app"); //Verificar
 
-jest.mock("../backend/src/DB/mongodb", () => {
-    const mongodbMock = require("./mocks/mongodbMock");
-    return mongodbMock;
-});
-jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
-    req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
-    next();
-  });
+const bcrypt = require('../backend/node_modules/bcryptjs');
+const jwt = require('../backend/node_modules/jsonwebtoken');
+
+const mock_mysql = require('./mocks/mysqlMock');
+const mock_mongodb = require('./mocks/mongodbMock');
+
+// // jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+// // jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+
+
 
 describe("Files Routes", () => {
+    jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+    jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
+        req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
+        next();
+      });
     describe("POST /:projectId/add", () => {
         it("should upload and add a file successfully", async () => {
-            mongodbMock.Project.findById.mockResolvedValue({ id: "projectId " });
-            mongodbMock.File.create.mockResolvedValue({
+            mock_mongodb.Project.findById.mockResolvedValue({ id: "projectId " });
+            mock_mongodb.File.create.mockResolvedValue({
                 id: "fileId",
                 surname: "Test File",
                 projectId: "projectId",
@@ -29,12 +35,12 @@ describe("Files Routes", () => {
 
             expect(response.status).toBe(201);
             expect(response.body.file.surname).toBe("Test File");
-            expect(mongodbMock.Project.findById).toHaveBeenCalled();
-            expect(mongodbMock.File.create).toHaveBeenCalled();
+            expect(mock_mongodb.Project.findById).toHaveBeenCalled();
+            expect(mock_mongodb.File.create).toHaveBeenCalled();
         });
 
         it("should return 404 if project is not found", async () => {
-            mongodbMock.Project.findById.mockResolvedValue(null);
+            mock_mongodb.Project.findById.mockResolvedValue(null);
 
             const response = await request(app)
                 .post("/files/projectId/add")
@@ -59,17 +65,17 @@ describe("Files Routes", () => {
 
     describe("GET /:id", () => {
         it("should return the file details by ID", async () => {
-            mongodbMock.File.findById.mockResolvedValue({ id: "fileId", surname: "Test File" });
+            mock_mongodb.File.findById.mockResolvedValue({ id: "fileId", surname: "Test File" });
 
             const response = await request(app).get("/files/fileId");
 
             expect(response.status).toBe(200);
             expect(response.body.file.surname).toBe("Test File");
-            expect(mongodbMock.File.findById).toHaveBeenCalledWith("fileId");
+            expect(mock_mongodb.File.findById).toHaveBeenCalledWith("fileId");
         });
 
         it("should return 404 if file is not found", async () => {
-            mongodbMock.File.findById.mockResolvedValue(null);
+            mock_mongodb.File.findById.mockResolvedValue(null);
 
             const response = await request(app).get("/files/fileId");
 
@@ -80,7 +86,7 @@ describe("Files Routes", () => {
 
     describe("PUT /:id/surname", () => {
         it("should update the file surname successfully", async () => {
-            mongodbMock.File.findByIdAndUpdate.mockResolvedValue({
+            mock_mongodb.File.findByIdAndUpdate.mockResolvedValue({
                 id: "fileId",
                 surname: "Updated Surname",
             });
@@ -103,7 +109,7 @@ describe("Files Routes", () => {
 
     describe("PUT /:id/status", () => {
         it("should update the file status successfully", async () => {
-            mongodbMock.File.findByIdAndUpdate.mockResolvedValue({
+            mock_mongodb.File.findByIdAndUpdate.mockResolvedValue({
                 id: "fileId",
                 status: "archived",
             });
@@ -128,7 +134,7 @@ describe("Files Routes", () => {
 
     describe("PUT /:id/update", () => {
         it("should update the file with new data", async () => {
-            mongodbMock.File.findByIdAndUpdate.mockResolvedValue({
+            mock_mongodb.File.findByIdAndUpdate.mockResolvedValue({
                 id: "fileId",
                 surname: "Updated Surname",
                 doorNumber: 2,
@@ -146,7 +152,7 @@ describe("Files Routes", () => {
         });
 
         it("should return 404 if file is not found", async () => {
-            mongodbMock.File.findByIdAndUpdate.mockResolvedValue(null);
+            mock_mongodb.File.findByIdAndUpdate.mockResolvedValue(null);
 
             const response = await request(app)
                 .put("/files/fileId/update")
@@ -160,7 +166,7 @@ describe("Files Routes", () => {
 
     describe("DELETE /:id", () => {
         it("should delete the file successfully", async () => {
-            mongodbMock.File.findByIdAndDelete.mockResolvedValue({ id: "fileId" });
+            mock_mongodb.File.findByIdAndDelete.mockResolvedValue({ id: "fileId" });
 
             const response = await request(app).delete("/files/fileId");
 
@@ -169,7 +175,7 @@ describe("Files Routes", () => {
         });
 
         it("should return 404 if file is not found", async () => {
-            mongodbMock.File.findByIdAndDelete.mockResolvedValue(null);
+            mock_mongodb.File.findByIdAndDelete.mockResolvedValue(null);
 
             const response = await request(app).delete("/files/fileId");
 

@@ -1,49 +1,39 @@
-// const request = require('supertest');
+const request = require('../backend/node_modules/supertest');
 const app = require("../backend/src/app");  //Verificar
-// const mysqlMock = require('../  mocks/mysqlMock');
-// const mongodbMock = require('../mocks/mongodbMock');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const mysqlMock = require('./mocks/mysqlMock');
 
-// jest.mock('../backend/src/DB/mysql', () => mysqlMock); 
-// jest.mock('../backend/src/DB/mongodb', () => mongodbMock); 
+const bcrypt = require('../backend/node_modules/bcryptjs');
+const jwt = require('../backend/node_modules/jsonwebtoken');
 
-jest.mock("../backend/src/DB/mongodb", () => {
-  const mongodbMock = require("./mocks/mongodbMock");
-  return mongodbMock;
-});
-jest.mock("../backend/src/DB/mysql", () => {
-  const mysqlMock = require("./mocks/mysqlMock");
-  return mysqlMock;
-});
+const mock_mysql = require('./mocks/mysqlMock');
+const mock_mongodb = require('./mocks/mongodbMock');
 
-jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
-    req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
-    next();
-  });
+// jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+// jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+
   
   describe('Projects API Routes', () => {
     afterEach(() => {
       jest.clearAllMocks();
     });
-  
+    jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+    jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+
     describe('GET /:userId', () => {
       it('should retrieve projects for a user', async () => {
         const mockedProjects = [{ id: 'project1', name: 'Test Project' }];
-        mongodbMock.Project.find.mockResolvedValue(mockedProjects);
+        mock_mongodb.Project.find.mockResolvedValue(mockedProjects);
   
         const response = await request(app).get('/projects/mockedUserId?depth=2&status=active');
         expect(response.status).toBe(200);
         expect(response.body.projects).toEqual(mockedProjects);
-        expect(mongodbMock.Project.find).toHaveBeenCalledWith({
+        expect(mock_mongodb.Project.find).toHaveBeenCalledWith({
           userId: 'mockedUserId',
           status: 'active',
         });
       });
   
       it('should return 500 if an error occurs', async () => {
-        mongodbMock.Project.find.mockRejectedValue(new Error('DB error'));
+        mock_mongodb.Project.find.mockRejectedValue(new Error('DB error'));
   
         const response = await request(app).get('/projects/mockedUserId');
         expect(response.status).toBe(500);
@@ -54,7 +44,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     describe('PUT /:id', () => {
       it('should update a project successfully', async () => {
         const updatedProject = { id: 'project1', name: 'Updated Project' };
-        mongodbMock.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
+        mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
   
         const response = await request(app)
           .put('/projects/project1')
@@ -64,7 +54,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
       });
   
       it('should return 404 if the project is not found', async () => {
-        mongodbMock.Project.findByIdAndUpdate.mockResolvedValue(null);
+        mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(null);
   
         const response = await request(app)
           .put('/projects/project1')
@@ -76,9 +66,9 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
   
     describe('POST /new-project', () => {
       it('should create a new project', async () => {
-        mysqlMock.oneUser.mockResolvedValue(true); // Simula que el usuario existe
+        mock_mysql.oneUser.mockResolvedValue(true); // Simula que el usuario existe
         const newProject = { id: 'newProject', name: 'Test Project' };
-        mongodbMock.Project.mockImplementation(() => ({
+        mock_mongodb.Project.mockImplementation(() => ({
           save: jest.fn().mockResolvedValue(newProject),
         }));
   
@@ -91,7 +81,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
       });
   
       it('should return 404 if the user does not exist', async () => {
-        mysqlMock.oneUser.mockResolvedValue(null);
+        mock_mysql.oneUser.mockResolvedValue(null);
   
         const response = await request(app).post('/projects/new-project').send({
           userId: 'mockedUserId',
@@ -105,7 +95,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     describe('DELETE /:id', () => {
       it('should delete a project successfully', async () => {
         const deletedProject = { id: 'project1', name: 'Test Project' };
-        mongodbMock.Project.findByIdAndDelete.mockResolvedValue(deletedProject);
+        mock_mongodb.Project.findByIdAndDelete.mockResolvedValue(deletedProject);
   
         const response = await request(app).delete('/projects/project1');
         expect(response.status).toBe(200);
@@ -113,7 +103,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
       });
   
       it('should return 404 if the project is not found', async () => {
-        mongodbMock.Project.findByIdAndDelete.mockResolvedValue(null);
+        mock_mongodb.Project.findByIdAndDelete.mockResolvedValue(null);
   
         const response = await request(app).delete('/projects/project1');
         expect(response.status).toBe(404);
@@ -125,10 +115,10 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
         it('should modify a nested project successfully', async () => {
             const parentProject = { id: 'parentProjectId', name: 'Parent Project' };
             const nestedProject = { id: 'nestedProjectId', name: 'Nested Project' };
-            mongodbMock.Project.findById
+            mock_mongodb.Project.findById
                 .mockResolvedValueOnce(parentProject) // Simula encontrar el proyecto padre
                 .mockResolvedValueOnce(nestedProject); // Simula encontrar el proyecto anidado
-            mongodbMock.Project.find.mockResolvedValue([parentProject, nestedProject]); // Simula devolver todos los proyectos
+            mock_mongodb.Project.find.mockResolvedValue([parentProject, nestedProject]); // Simula devolver todos los proyectos
     
             const response = await request(app)
                 .put('/projects/parentProjectId/nest-mod')
@@ -136,11 +126,11 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     
             expect(response.status).toBe(200);
             expect(response.body.nestedProject.name).toBe('Updated Nested Project');
-            expect(mongodbMock.Project.findById).toHaveBeenCalledTimes(2);
+            expect(mock_mongodb.Project.findById).toHaveBeenCalledTimes(2);
         });
     
         it('should return 404 if the parent project is not found', async () => {
-            mongodbMock.Project.findById.mockResolvedValueOnce(null); // No encuentra el proyecto padre
+            mock_mongodb.Project.findById.mockResolvedValueOnce(null); // No encuentra el proyecto padre
     
             const response = await request(app)
                 .put('/projects/parentProjectId/nest-mod')
@@ -158,7 +148,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
                 nestedProjects: ['nestedProjectId'],
             };
             const nestedProject = { id: 'nestedProjectId', name: 'Nested Project' };
-            mongodbMock.Project.findById
+            mock_mongodb.Project.findById
                 .mockResolvedValueOnce(parentProject) // Encuentra el proyecto padre
                 .mockResolvedValueOnce(nestedProject); // Encuentra el proyecto anidado
     
@@ -168,12 +158,12 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     
             expect(response.status).toBe(200);
             expect(response.body.message).toBe('Nested project removed successfully');
-            expect(mongodbMock.Project.findById).toHaveBeenCalledTimes(2);
+            expect(mock_mongodb.Project.findById).toHaveBeenCalledTimes(2);
         });
     
         it('should return 400 if the nested project is not part of the parent project', async () => {
             const parentProject = { id: 'parentProjectId', nestedProjects: [] };
-            mongodbMock.Project.findById.mockResolvedValueOnce(parentProject); // Encuentra el proyecto padre
+            mock_mongodb.Project.findById.mockResolvedValueOnce(parentProject); // Encuentra el proyecto padre
     
             const response = await request(app)
                 .delete('/projects/parentProjectId/nest-del')
@@ -187,7 +177,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     describe('PUT /:id/update-surname', () => {
         it('should update the project surname successfully', async () => {
             const updatedProject = { id: 'projectId', surname: 'Updated Surname' };
-            mongodbMock.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
+            mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
     
             const response = await request(app)
                 .put('/projects/projectId/update-surname')
@@ -210,7 +200,7 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     describe('PUT /:id/update-status', () => {
         it('should update the project status successfully', async () => {
             const updatedProject = { id: 'projectId', status: 'completed' };
-            mongodbMock.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
+            mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
     
             const response = await request(app)
                 .put('/projects/projectId/update-status')
@@ -231,3 +221,18 @@ jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) =>
     });
     
   });
+
+  // jest.mock("../backend/src/DB/mongodb", () => {
+//   const mock_mongodb = require("./mocks/mongodbMock");
+//   return mock_mongodb;
+// });
+
+// jest.mock("../backend/src/DB/mysql", () => {
+//   const mock_mysql = require("./mocks/mysqlMock");
+//   return mock_mysql;
+// });
+
+// jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
+//     req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
+//     next();
+//   });
