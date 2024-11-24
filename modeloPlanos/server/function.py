@@ -13,6 +13,7 @@ model = YOLO("blueprint.pt")
 def apply_model(coded_image):
     decoded_image = base64.b64decode(coded_image)
     image = Image.open(BytesIO(decoded_image))
+    image = image.convert("RGB")
     image_numpy = np.array(image)
     result = model.predict(image_numpy, conf=0.5, show_labels=False)
     classes = result[0].boxes.cls.numpy()
