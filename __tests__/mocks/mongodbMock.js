@@ -1,4 +1,9 @@
+const connectToMongoDB = jest.fn(async () => {
+  console.log("Mock MongoDB connected");
+});
+
 module.exports = {
+  connectToMongoDB,
     Project: {
       find: jest.fn(),
       findOne: jest.fn(),

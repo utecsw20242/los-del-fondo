@@ -1,26 +1,21 @@
-// const request = require('supertest');
+const request = require('../backend/node_modules/supertest');
 const app = require("../backend/src/app"); //Verificar
-// const mysqlMock = require('../  mocks/mysqlMock');
-// const mongodbMock = require('../mocks/mongodbMock');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 
-// jest.mock('../backend/src/DB/mysql', () => mysqlMock); 
-// jest.mock('../backend/src/DB/mongodb', () => mongodbMock); 
+const bcrypt = require('../backend/node_modules/bcryptjs');
+const jwt = require('../backend/node_modules/jsonwebtoken');
 
-jest.mock("../backend/src/DB/mongodb", () => {
-    const mongodbMock = require("./mocks/mongodbMock");
-    return mongodbMock;
-  });
-  jest.mock("../backend/src/DB/mysql", () => {
-    const mysqlMock = require("./mocks/mysqlMock");
-    return mysqlMock;
-  });
+const mock_mysql = require('./mocks/mysqlMock');
+const mock_mongodb = require('./mocks/mongodbMock');
+
+// jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+// jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+
 
 describe('Users API', () => {
     afterEach(() => {
         jest.clearAllMocks(); // Limpia los mocks después de cada prueba
     });
+    jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
 
     describe('POST /users', () => {
         it('should create a new user in MySQL and MongoDB', async () => {
@@ -33,7 +28,7 @@ describe('Users API', () => {
             const hashedPassword = await bcrypt.hash(newUser.password, 10);
 
             // Mock de MySQL
-            mysqlMock.addUser.mockResolvedValue({
+            mock_mysql.addUser.mockResolvedValue({
                 user: {
                     id: '12345',
                     username: 'testuser',
@@ -43,7 +38,7 @@ describe('Users API', () => {
             });
 
             // Mock de MongoDB
-            mongodbMock.__mocks__.mockSave.mockResolvedValue(); // Simula que `save` fue exitoso
+            mock_mongodb.__mocks__.mockSave.mockResolvedValue(); // Simula que `save` fue exitoso
 
             const response = await request(app).post('/users').send(newUser);
 
@@ -52,8 +47,8 @@ describe('Users API', () => {
             expect(response.body.user).toHaveProperty('username', 'testuser');
 
             // Verifica que los mocks fueron llamados
-            expect(mysqlMock.addUser).toHaveBeenCalledWith('users', expect.any(Object));
-            expect(mongodbMock.Project).toHaveBeenCalledWith(expect.objectContaining({
+            expect(mock_mysql.addUser).toHaveBeenCalledWith('users', expect.any(Object));
+            expect(mock_mongodb.Project).toHaveBeenCalledWith(expect.objectContaining({
                 userId: '12345',
                 name: 'Main Project',
                 status: 'default',
@@ -71,7 +66,7 @@ describe('Users API', () => {
             const hashedPassword = await bcrypt.hash(userLogin.password, 10);
 
             // Mock de MySQL
-            mysqlMock.findUserByEmail.mockResolvedValue({
+            mock_mysql.findUserByEmail.mockResolvedValue({
                 id: '12345',
                 username: 'testuser',
                 email: 'test@example.com',
@@ -90,14 +85,14 @@ describe('Users API', () => {
 
     describe('GET /users', () => {
         it('should fetch all users from MySQL', async () => {
-            mysqlMock.allUsers.mockResolvedValue([{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }]);
+            mock_mysql.allUsers.mockResolvedValue([{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }]);
 
             const response = await request(app).get('/users');
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(expect.any(Array));
             expect(response.body.length).toBe(2);
-            expect(mysqlMock.allUsers).toHaveBeenCalledWith('users');
+            expect(mock_mysql.allUsers).toHaveBeenCalledWith('users');
         });
     });
 
@@ -106,7 +101,7 @@ describe('Users API', () => {
             const userId = '12345';
 
             // Mock de MySQL
-            mysqlMock.oneUser.mockResolvedValue({
+            mock_mysql.oneUser.mockResolvedValue({
                 id: userId,
                 username: 'testuser',
                 email: 'test@example.com',
@@ -122,7 +117,7 @@ describe('Users API', () => {
                 username: 'testuser',
                 email: 'test@example.com',
             });
-            expect(mysqlMock.oneUser).toHaveBeenCalledWith('users', userId);
+            expect(mock_mysql.oneUser).toHaveBeenCalledWith('users', userId);
         });
 
         it('should return 403 if the user ID does not match the logged-in user', async () => {
@@ -142,7 +137,7 @@ describe('Users API', () => {
             const email = 'test@example.com';
 
             // Mock de MySQL
-            mysqlMock.checkEmailExists.mockResolvedValue(true);
+            mock_mysql.checkEmailExists.mockResolvedValue(true);
 
             const response = await request(app)
                 .post('/users/verify-email')
@@ -150,14 +145,14 @@ describe('Users API', () => {
 
             expect(response.status).toBe(200);
             expect(response.body).toBe('Email exists. You will receive an email confirmation.');
-            expect(mysqlMock.checkEmailExists).toHaveBeenCalledWith(email);
+            expect(mock_mysql.checkEmailExists).toHaveBeenCalledWith(email);
         });
 
         it('should return 404 if the email does not exist', async () => {
             const email = 'nonexistent@example.com';
 
             // Mock de MySQL
-            mysqlMock.checkEmailExists.mockResolvedValue(false);
+            mock_mysql.checkEmailExists.mockResolvedValue(false);
 
             const response = await request(app)
                 .post('/users/verify-email')
@@ -165,7 +160,7 @@ describe('Users API', () => {
 
             expect(response.status).toBe(404);
             expect(response.body).toBe('No account found with that email.');
-            expect(mysqlMock.checkEmailExists).toHaveBeenCalledWith(email);
+            expect(mock_mysql.checkEmailExists).toHaveBeenCalledWith(email);
         });
     });
 
@@ -174,7 +169,7 @@ describe('Users API', () => {
             const userId = '12345';
 
             // Mock de MySQL
-            mysqlMock.removeUser.mockResolvedValue({ affectedRows: 1 });
+            mock_mysql.removeUser.mockResolvedValue({ affectedRows: 1 });
 
             const response = await request(app)
                 .delete('/users')
@@ -182,14 +177,14 @@ describe('Users API', () => {
 
             expect(response.status).toBe(200);
             expect(response.body).toBe('User was removed');
-            expect(mysqlMock.removeUser).toHaveBeenCalledWith('users', userId);
+            expect(mock_mysql.removeUser).toHaveBeenCalledWith('users', userId);
         });
 
         it('should handle user not found during deletion', async () => {
             const userId = 'nonexistentUserId';
 
             // Mock de MySQL
-            mysqlMock.removeUser.mockResolvedValue({ affectedRows: 0 });
+            mock_mysql.removeUser.mockResolvedValue({ affectedRows: 0 });
 
             const response = await request(app)
                 .delete('/users')
@@ -205,7 +200,7 @@ describe('Users API', () => {
             const username = 'testuser';
 
             // Mock de MySQL
-            mysqlMock.oneUser.mockResolvedValue({
+            mock_mysql.oneUser.mockResolvedValue({
                 id: '12345',
                 username: username,
                 email: 'test@example.com',
@@ -221,7 +216,7 @@ describe('Users API', () => {
                 username: username,
                 email: 'test@example.com',
             });
-            expect(mysqlMock.oneUser).toHaveBeenCalledWith('users', username);
+            expect(mock_mysql.oneUser).toHaveBeenCalledWith('users', username);
         });
 
         it('should return 403 if the username does not match the logged-in user', async () => {
