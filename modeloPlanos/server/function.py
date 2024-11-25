@@ -2,7 +2,6 @@
 
 from ultralytics import YOLO
 import base64
-from scipy.spatial import cKDTree
 import cv2
 import numpy as np
 from PIL import Image
@@ -187,6 +186,6 @@ def score(coded_image):
 
     possible_percent = (
         possible / len(closest_objects) if len(closest_objects) > 0 else 0
-    )
+    ) * 100
 
     return possible_percent
