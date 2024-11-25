@@ -6,7 +6,7 @@ from fastapi import FastAPI
 app = FastAPI()
 
 
-@app.post("/file", response_model=schemas.FileData)
+@app.post("/file/analyze", response_model=schemas.FileData)
 def analyze_file(files: schemas.FileBase):
     try:
         body = {}
@@ -19,7 +19,7 @@ def analyze_file(files: schemas.FileBase):
         return {"message": "failure", "error": str(e)}
 
 
-@app.post("/file", response_model=schemas.FileData)
+@app.post("/file/score", response_model=schemas.FileData)
 def score_file(files: schemas.FileBase):
     try:
         coded_image = files.coded_file
