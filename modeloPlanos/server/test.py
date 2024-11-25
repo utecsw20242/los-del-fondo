@@ -2,7 +2,7 @@
 
 import base64
 import requests
-from function import apply_model
+from function import apply_model, score
 from PIL import Image
 from io import BytesIO
 
@@ -31,10 +31,16 @@ def recognize_api(path):
     return response
 
 
-path = "../basic.png"
-response = recognize_api(path)
-print(response)
+path = "../basic_extra.png"
+with open(path, "rb") as image:
+    image_string = base64.b64encode(image.read()).decode("utf-8")
+
+score(image_string)
+
+# path = "../basic_extra.png"
+# response = recognize_api(path)
+# print(response)
 # body = recognize(path)
-# decoded_image = base64.b64decode(body["image_coded"])
+# decoded_image = base64.b64decode(body["anotated_file"])
 # image = Image.open(BytesIO(decoded_image))
 # image.show()
