@@ -1,16 +1,12 @@
-# schemas.py
-
 from pydantic import BaseModel
 
+from typing import Dict
+
 class FileBase(BaseModel):
-    # Se asume que la imagen está en base 64
+    # Asumiendo que el archivo es una imagen en base64
     coded_file: str
 
 class FileData(BaseModel):
-    # matches será un diccionario con las claves windows, doors y texts
-    matches: dict = {
-        "windows": 0,
-        "doors": 0,
-        "texts": 0
-    }
+    # Cambiar la estructura para que 'matches' sea un diccionario
+    matches: Dict[str, int]
     annotated_file: str
