@@ -9,9 +9,10 @@ app = FastAPI()
 @app.post("/file", response_model=schemas.FileData)
 def analyze_file(files: schemas.FileBase):
     try:
+        body = {}
         coded_image = files.coded_file
         matches, annotated_file = apply_model(coded_image)
-        body = matches
+        body["matches"] = matches
         body["annotated_file"] = annotated_file
         return body
     except Exception as e:
