@@ -6,15 +6,14 @@ const fs = require("fs");
 const { exec } = require('child_process');
 const util = require('util'); 
 const execPromise = util.promisify(exec);
-const allowedTypes = /jpeg|jpg|png/;
+const allowedTypes = /jpeg|jpg|png|gif|bmp|webp|tiff/;
 
 const fileFilter = (req, file, cb) => {
   if(!file)return cb(new Error('No file uploaded'));
-  const mimeType = allowedTypes.test(file.mimetype);
-  const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-  if (mimeType && extName) {
-    return cb(null, true);
-  }
+
+  const isValid = allowedTypes.test(file.mimetype) && allowedTypes.test(path.extname(file.originalname).toLowerCase());
+  if (isValid) return cb(null, true);
+  
   const error = new Error("Only image files (jpeg, jpg, png) are allowed");
   error.code = 'INVALID_FILE_TYPE';
   return cb(error);
@@ -23,6 +22,7 @@ const fileFilter = (req, file, cb) => {
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const { username } = req.user;
+
     if (!username) {
       const error = new Error("Username is required");
       error.code = 'USERNAME_REQUIRED';
@@ -59,10 +59,11 @@ exports.addFile = async (req, res) => {
     const project = await Project.findById(projectObjectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    const imageBuffer = fs.readFileSync(imagePath);
-    const base64Image = imageBuffer.toString("base64");
+    //const imageBuffer = fs.readFileSync(imagePath);
+    //const base64Image = imageBuffer.toString("base64");
+
     const pythonScriptPath = path.join(__dirname, "../../../function.py");
-    const pythonCommand = `"C:\\Users\\sora2\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" ${pythonScriptPath} ${base64Image}`;
+    const pythonCommand = `"C:\\Users\\sora2\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" ${pythonScriptPath} ${imagePath}`;
 
     try {
       const { stdout, stderr } = await execPromise(pythonCommand);
@@ -84,14 +85,17 @@ exports.addFile = async (req, res) => {
       const textNumber = matches.texts || 0;
       const aiContent = JSON.stringify(matches);
 
+      const imageUrl = `/uploads/${req.user.username}/${req.file.filename}`;
+
       const newFile = new File({
         userId,
         projectId: projectObjectId,
+        name: req.file.filename,
         surname,
         doorNumber,
         windowNumber,
         textNumber,
-        image: annotated_image_coded, 
+        image:imageUrl, //: annotated_image_coded, 
         aiContent,
       });
 
@@ -101,7 +105,9 @@ exports.addFile = async (req, res) => {
         { $push: { files: newFile._id } },
         { new: true }
       );
-        return res.status(201).json({ message: "File added successfully", file: newFile });
+
+      const updateProject = await Project.findById(projectObjectId).populate('files');
+        return res.status(201).json({ message: "File added successfully", file: newFile,project: updateProject });
       } catch (error) {
         console.error(`Error executing Python script: ${error}`);
         return res.status(500).json({ message: "Error processing image with AI service", error: error.message });
@@ -115,11 +121,13 @@ exports.addFile = async (req, res) => {
 exports.getFileById = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(id);
     const file = await File.findById(id);
     if (!file) return res.status(404).json({ message: "File not found" });
+    console.log(file);
     res.status(200).json({ file });
   } catch (err) {
-    res.status(500).json({ message: "Error getting file", error });
+    res.status(500).json({ message: "Error getting file", err });
   }
 };
 
@@ -210,8 +218,7 @@ exports.deleteFile = async (req, res) => {
   try {
     const { id } = req.params;
     const deletedFile = await File.findByIdAndDelete(id);
-    if (!deletedFile)
-      return res.status(404).json({ message: "File not found" });
+    if (!deletedFile) return res.status(404).json({ message: "File not found" });
     res.status(200).json({ message: "File deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error deleting file", error });

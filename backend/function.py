@@ -9,9 +9,9 @@ model = YOLO("models/blueprint.pt")
 
 def apply_model(coded_image):
     try:
-        img_data = base64.b64decode(coded_image)
-        nparr = np.frombuffer(img_data, np.uint8)
-        image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        #img_data = base64.b64decode(coded_image)
+        #nparr = np.frombuffer(img_data, np.uint8)
+        image = cv2.imread(coded_image)#cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
         if image is None:
             raise ValueError("Image decoding failed. Please check the input base64 image.")
@@ -36,13 +36,7 @@ def apply_model(coded_image):
             x1, y1, x2, y2 = map(int, box)
             class_id = int(result[0].boxes.cls[i])
             label = names[class_id]
-            cv2.rectangle(
-                image,
-                (x1, y1),
-                (x2, y2),
-                colors.get(label, (0, 255, 0)),
-                4,
-            )
+            cv2.rectangle(image, (x1, y1),(x2, y2),colors.get(label, (0, 255, 0)),4)
         _, buffer = cv2.imencode(".png", image)
         annotated_image_coded = base64.b64encode(buffer).decode("utf-8")
         return json.dumps({"matches": matches, "annotated_image_coded": annotated_image_coded})

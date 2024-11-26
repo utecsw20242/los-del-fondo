@@ -6,6 +6,7 @@ const rateLimit = require('express-rate-limit');
 const {connectToMongoDB} = require('./DB/mongodb');
 const config = require('./config');
 const authenticateJWT = require('./middleware/authenticateJWT');
+const path = require('path');
 
 const users = require('./modules/users/routes');
 const projects = require('./modules/projects/routes');
@@ -17,12 +18,25 @@ const app = express();
 // MongoDB Connection
 connectToMongoDB();
 
+const corsOptions = {
+    origin: 'http://localhost:3000',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+};
+
 //middlewares
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+// Middleware to serve static files
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+}, express.static(path.join(__dirname, '../uploads')));
 
 //configuration
 app.set('port', config.app.port);

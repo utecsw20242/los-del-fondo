@@ -4,7 +4,6 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [userProfile, setUserProfile] = useState(() => {
     const savedProfile = localStorage.getItem('userProfile');
-    console.log('Retrieved from localStorage:',savedProfile);
     try {
       return savedProfile ? JSON.parse(savedProfile) : null;
     } catch (err){
@@ -15,7 +14,6 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (userProfile) {
-      console.log('Saving to localStorage:',userProfile);
       localStorage.setItem('userProfile', JSON.stringify(userProfile));
     } else {
       localStorage.removeItem('userProfile');
