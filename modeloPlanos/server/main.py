@@ -19,12 +19,12 @@ def analyze_file(files: schemas.FileBase):
         return {"message": "failure", "error": str(e)}
 
 
-@app.post("/file/score", response_model=schemas.FileData)
+@app.post("/file/score", response_model=schemas.Score)
 def score_file(files: schemas.FileBase):
     try:
         coded_image = files.coded_file
         possible_percent = score(coded_image)
-        body = {"possible_percent": round(possible_percent, 2)}
+        body = {"score": round(possible_percent, 2)}
         return body
     except Exception as e:
         return {"message": "failure", "error": str(e)}
