@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build: ./frontend
+    image: swpiergo121/los_del_fondo_frontend:latest
+    ports:
+      - 3000:3000
+  backend:
+    build: ./backend
+    image: swpiergo121/los_del_fondo_backend:latest
+    ports:
+      - 4000:4000
+  model:
+    build: ./modeloPlanos/server
+    image: swpiergo121/los_del_fondo_model:latest
+    ports:
+      - 8080:8080
