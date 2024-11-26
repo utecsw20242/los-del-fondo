@@ -1,14 +1,20 @@
+const mock_mysql = require('./mocks/mysqlMock');
+const mock_mongodb = require('./mocks/mongodbMock');
+
+jest.setTimeout(10000); 
+
+jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+jest.setTimeout(10000); 
+
+
 const request = require('../backend/node_modules/supertest');
-const app = require("../backend/src/app");  //Verificar
+const app = require("../backend/src/app"); //Verificar
 
 const bcrypt = require('../backend/node_modules/bcryptjs');
 const jwt = require('../backend/node_modules/jsonwebtoken');
 
-const mock_mysql = require('./mocks/mysqlMock');
-const mock_mongodb = require('./mocks/mongodbMock');
-
-// jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
-// jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+const mongoose = require('../backend/node_modules/mongoose');
 
   
   describe('Projects API Routes', () => {
@@ -23,7 +29,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
         const mockedProjects = [{ id: 'project1', name: 'Test Project' }];
         mock_mongodb.Project.find.mockResolvedValue(mockedProjects);
   
-        const response = await request(app).get('/projects/mockedUserId?depth=2&status=active');
+        const response = await request(app).get('/api/projects/mockedUserId?depth=2&status=active');
         expect(response.status).toBe(200);
         expect(response.body.projects).toEqual(mockedProjects);
         expect(mock_mongodb.Project.find).toHaveBeenCalledWith({
@@ -35,7 +41,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
       it('should return 500 if an error occurs', async () => {
         mock_mongodb.Project.find.mockRejectedValue(new Error('DB error'));
   
-        const response = await request(app).get('/projects/mockedUserId');
+        const response = await request(app).get('api/projects/mockedUserId');
         expect(response.status).toBe(500);
         expect(response.body.message).toBe('Error retrieving projects');
       });
@@ -47,7 +53,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
         mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
   
         const response = await request(app)
-          .put('/projects/project1')
+          .put('/api/projects/project1')
           .send({ name: 'Updated Project' });
         expect(response.status).toBe(200);
         expect(response.body.project).toEqual(updatedProject);
@@ -57,7 +63,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
         mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(null);
   
         const response = await request(app)
-          .put('/projects/project1')
+          .put('/api/projects/project1')
           .send({ name: 'Updated Project' });
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('Project not found');
@@ -68,11 +74,9 @@ const mock_mongodb = require('./mocks/mongodbMock');
       it('should create a new project', async () => {
         mock_mysql.oneUser.mockResolvedValue(true); // Simula que el usuario existe
         const newProject = { id: 'newProject', name: 'Test Project' };
-        mock_mongodb.Project.mockImplementation(() => ({
-          save: jest.fn().mockResolvedValue(newProject),
-        }));
+       
   
-        const response = await request(app).post('/projects/new-project').send({
+        const response = await request(app).post('/api/projects/new-project').send({
           userId: 'mockedUserId',
           name: 'Test Project',
         });
@@ -83,7 +87,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
       it('should return 404 if the user does not exist', async () => {
         mock_mysql.oneUser.mockResolvedValue(null);
   
-        const response = await request(app).post('/projects/new-project').send({
+        const response = await request(app).post('/api/projects/new-project').send({
           userId: 'mockedUserId',
           name: 'Test Project',
         });
@@ -97,7 +101,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
         const deletedProject = { id: 'project1', name: 'Test Project' };
         mock_mongodb.Project.findByIdAndDelete.mockResolvedValue(deletedProject);
   
-        const response = await request(app).delete('/projects/project1');
+        const response = await request(app).delete('/api/projects/project1');
         expect(response.status).toBe(200);
         expect(response.body.message).toBe('Project deleted successfully');
       });
@@ -105,7 +109,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
       it('should return 404 if the project is not found', async () => {
         mock_mongodb.Project.findByIdAndDelete.mockResolvedValue(null);
   
-        const response = await request(app).delete('/projects/project1');
+        const response = await request(app).delete('/api/projects/project1');
         expect(response.status).toBe(404);
         expect(response.body.message).toBe('Project not found');
       });
@@ -121,7 +125,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
             mock_mongodb.Project.find.mockResolvedValue([parentProject, nestedProject]); // Simula devolver todos los proyectos
     
             const response = await request(app)
-                .put('/projects/parentProjectId/nest-mod')
+                .put('/api/projects/parentProjectId/nest-mod')
                 .send({ nestedProjectId: 'nestedProjectId', name: 'Updated Nested Project' });
     
             expect(response.status).toBe(200);
@@ -133,7 +137,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
             mock_mongodb.Project.findById.mockResolvedValueOnce(null); // No encuentra el proyecto padre
     
             const response = await request(app)
-                .put('/projects/parentProjectId/nest-mod')
+                .put('/api/projects/parentProjectId/nest-mod')
                 .send({ nestedProjectId: 'nestedProjectId', name: 'Updated Nested Project' });
     
             expect(response.status).toBe(404);
@@ -149,11 +153,11 @@ const mock_mongodb = require('./mocks/mongodbMock');
             };
             const nestedProject = { id: 'nestedProjectId', name: 'Nested Project' };
             mock_mongodb.Project.findById
-                .mockResolvedValueOnce(parentProject) // Encuentra el proyecto padre
-                .mockResolvedValueOnce(nestedProject); // Encuentra el proyecto anidado
+                .mockResolvedValueOnce(parentProject) 
+                .mockResolvedValueOnce(nestedProject); 
     
             const response = await request(app)
-                .delete('/projects/parentProjectId/nest-del')
+                .delete('/api/projects/parentProjectId/nest-del')
                 .send({ nestedProjectId: 'nestedProjectId' });
     
             expect(response.status).toBe(200);
@@ -163,10 +167,10 @@ const mock_mongodb = require('./mocks/mongodbMock');
     
         it('should return 400 if the nested project is not part of the parent project', async () => {
             const parentProject = { id: 'parentProjectId', nestedProjects: [] };
-            mock_mongodb.Project.findById.mockResolvedValueOnce(parentProject); // Encuentra el proyecto padre
+            mock_mongodb.Project.findById.mockResolvedValueOnce(parentProject); 
     
             const response = await request(app)
-                .delete('/projects/parentProjectId/nest-del')
+                .delete('/api/projects/parentProjectId/nest-del')
                 .send({ nestedProjectId: 'nestedProjectId' });
     
             expect(response.status).toBe(400);
@@ -180,7 +184,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
             mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
     
             const response = await request(app)
-                .put('/projects/projectId/update-surname')
+                .put('/api/projects/projectId/update-surname')
                 .send({ surname: 'Updated Surname' });
     
             expect(response.status).toBe(200);
@@ -189,7 +193,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
     
         it('should return 400 if surname is not provided', async () => {
             const response = await request(app)
-                .put('/projects/projectId/update-surname')
+                .put('/api/projects/projectId/update-surname')
                 .send({});
     
             expect(response.status).toBe(400);
@@ -203,7 +207,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
             mock_mongodb.Project.findByIdAndUpdate.mockResolvedValue(updatedProject);
     
             const response = await request(app)
-                .put('/projects/projectId/update-status')
+                .put('/api/projects/projectId/update-status')
                 .send({ status: 'completed' });
     
             expect(response.status).toBe(200);
@@ -212,7 +216,7 @@ const mock_mongodb = require('./mocks/mongodbMock');
     
         it('should return 400 if status is not provided', async () => {
             const response = await request(app)
-                .put('/projects/projectId/update-status')
+                .put('/api/projects/projectId/update-status')
                 .send({});
     
             expect(response.status).toBe(400);
@@ -221,18 +225,3 @@ const mock_mongodb = require('./mocks/mongodbMock');
     });
     
   });
-
-  // jest.mock("../backend/src/DB/mongodb", () => {
-//   const mock_mongodb = require("./mocks/mongodbMock");
-//   return mock_mongodb;
-// });
-
-// jest.mock("../backend/src/DB/mysql", () => {
-//   const mock_mysql = require("./mocks/mysqlMock");
-//   return mock_mysql;
-// });
-
-// jest.mock('../backend/src/middleware/authenticateJWT', () => (req, res, next) => {
-//     req.user = { id: 'mockedUserId' }; // Simula un usuario autenticado
-//     next();
-//   });
