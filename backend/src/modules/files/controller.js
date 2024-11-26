@@ -6,6 +6,7 @@ const fs = require("fs");
 const { exec } = require('child_process');
 const util = require('util'); 
 const execPromise = util.promisify(exec);
+const axios = require("axios");
 const allowedTypes = /jpeg|jpg|png|gif|bmp|webp|tiff/;
 
 const fileFilter = (req, file, cb) => {
@@ -59,63 +60,63 @@ exports.addFile = async (req, res) => {
     const project = await Project.findById(projectObjectId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
-    //const imageBuffer = fs.readFileSync(imagePath);
-    //const base64Image = imageBuffer.toString("base64");
+    // En lugar de ejecutar el script de Python, hacemos una solicitud HTTP al servidor FastAPI
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString("base64");
 
-    const pythonScriptPath = path.join(__dirname, "../../../function.py");
-    const pythonCommand = `"C:\\Users\\sora2\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" ${pythonScriptPath} ${imagePath}`;
+    // Enviamos la imagen al servidor FastAPI para que procese la imagen y devuelva la respuesta
+    const data = {
+      coded_file: base64Image,
+    };
+
+    let responseData = {};
 
     try {
-      const { stdout, stderr } = await execPromise(pythonCommand);
-      if (stderr) {
-        console.error("Error processing image with AI service:", stderr);
-        return res.status(500).json({ message: "Error processing image with AI service", error: stderr });
-      }
-      let result;
-      try {
-        result = JSON.parse(stdout);
-      } catch (parseError) {
-        console.error("Error parsing Python response:", parseError);
-        return res.status(500).json({ message: "Error parsing AI processing result", error: parseError.message });
-      }
-
-      const { matches, annotated_image_coded } = result;
-      const doorNumber = matches.doors || 0;
-      const windowNumber = matches.windows || 0;
-      const textNumber = matches.texts || 0;
-      const aiContent = JSON.stringify(matches);
-
-      const imageUrl = `/uploads/${req.user.username}/${req.file.filename}`;
-
-      const newFile = new File({
-        userId,
-        projectId: projectObjectId,
-        name: req.file.filename,
-        surname,
-        doorNumber,
-        windowNumber,
-        textNumber,
-        image:imageUrl, //: annotated_image_coded, 
-        aiContent,
+      // Aquí hacemos la solicitud POST al servidor FastAPI
+      const response = await axios.post("http://127.0.0.1:8000/file/analyze", data, {
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
-
-      await newFile.save();
-      await Project.findByIdAndUpdate(
-        projectObjectId,
-        { $push: { files: newFile._id } },
-        { new: true }
-      );
-
-      const updateProject = await Project.findById(projectObjectId).populate('files');
-        return res.status(201).json({ message: "File added successfully", file: newFile,project: updateProject });
-      } catch (error) {
-        console.error(`Error executing Python script: ${error}`);
-        return res.status(500).json({ message: "Error processing image with AI service", error: error.message });
-      }
+      responseData = response.data;
     } catch (error) {
-      console.log("Error adding file:", error);
-      res.status(500).json({ message: "Error adding file", error });
+      console.error("Error al contactar con el servidor FastAPI: ", error);
+      return res.status(500).json({ message: "Error contacting FastAPI server", error });
     }
+
+    const { matches, annotated_image_coded } = responseData;
+    const doorNumber = matches.doors || 0;
+    const windowNumber = matches.windows || 0;
+    const textNumber = matches.texts || 0;
+    const aiContent = JSON.stringify(matches);
+
+    const imageUrl = `/uploads/${req.user.username}/${req.file.filename}`;
+
+    const newFile = new File({
+      userId,
+      projectId: projectObjectId,
+      name: req.file.filename,
+      surname,
+      doorNumber,
+      windowNumber,
+      textNumber,
+      image: imageUrl,  // En este caso la imagen base64 se guarda como URL, no como archivo codificado
+      aiContent,
+    });
+
+    await newFile.save();
+    await Project.findByIdAndUpdate(
+      projectObjectId,
+      { $push: { files: newFile._id } },
+      { new: true }
+    );
+
+    const updateProject = await Project.findById(projectObjectId).populate('files');
+    return res.status(201).json({ message: "File added successfully", file: newFile, project: updateProject });
+  } catch (error) {
+    console.log("Error al agregar archivo:", error);
+    res.status(500).json({ message: "Error adding file", error });
+  }
 };
 
 exports.getFileById = async (req, res) => {
@@ -140,40 +141,68 @@ exports.updateFile = async (req, res) => {
     if (surname) {
       updateData.surname = surname;
     }
+
     if (req.file) {
       const imagePath = req.file.path;
+
+      // Leer la imagen en base64 para enviarla al servidor de FastAPI
       const imageBuffer = fs.readFileSync(imagePath);
       const base64Image = imageBuffer.toString("base64");
-      const pythonScriptPath = path.join(__dirname, "../../../function.py");
-      const pythonCommand = `"C:\\Users\\sora2\\AppData\\Local\\Programs\\Python\\Python312\\python.exe" ${pythonScriptPath} ${base64Image}`;
+      const data = { coded_file: base64Image };
 
       try {
-        const { stdout, stderr } = await execPromise(pythonCommand);
-        if (stderr) {
-          console.error("Error processing image with AI service:", stderr);
-          return res.status(500).json({ message: "Error processing image with AI service", error: stderr });
-        }
+        // Llamada al servidor de FastAPI
+        const response = await axios.post("http://127.0.0.1:8000/file/analyze", data, {
+          headers: { "Content-Type": "application/json" },
+        });
 
-        const result = JSON.parse(stdout);
-        const { matches, annotated_image_coded } = result;
+        // Extraer los datos de la respuesta
+        const responseData = response.data;
+        const annotatedImage = responseData.annotated_file;
 
-        updateData.doorNumber = matches.doors || 0;
-        updateData.windowNumber = matches.windows || 0;
-        updateData.textNumber = matches.texts || 0;
-        updateData.image = annotated_image_coded;
-        updateData.aiContent = JSON.stringify(matches);
+        updateData.doorNumber = responseData.doors || 0;
+        updateData.windowNumber = responseData.windows || 0;
+        updateData.textNumber = responseData.texts || 0;
+
+        // Guardar la imagen anotada en el sistema de archivos (opcional)
+        const annotatedBuffer = Buffer.from(annotatedImage, "base64");
+        const annotatedImagePath = imagePath.replace(
+          /(\.[\w\d_-]+)$/i,
+          "-annotated$1"
+        );
+        fs.writeFileSync(annotatedImagePath, annotatedBuffer);
+
+        // Actualizar el path de la imagen anotada
+        updateData.image = annotatedImagePath;
+        updateData.aiContent = JSON.stringify({
+          doors: updateData.doorNumber,
+          windows: updateData.windowNumber,
+          texts: updateData.textNumber,
+        });
       } catch (error) {
-        console.error("Error executing Python script:", error);
-        return res.status(500).json({ message: "Error processing image with AI service", error: error.message });
+        console.error("Error procesando imagen con FastAPI:", error.message);
+        return res.status(500).json({
+          message: "Error procesando imagen con FastAPI",
+          error: error.message,
+        });
       }
     }
 
-    const updatedFile = await File.findByIdAndUpdate(id, updateData, { new: true });
-    if (!updatedFile) return res.status(404).json({ message: "File not found" });
+    // Actualizar la información del archivo en la base de datos
+    const updatedFile = await File.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
 
-    res.status(200).json({ message: "File updated successfully", file: updatedFile });
+    if (!updatedFile) {
+      return res.status(404).json({ message: "File not found" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "File updated successfully", file: updatedFile });
   } catch (error) {
-    res.status(500).json({ message: "Error updating file", error });
+    console.error("Error actualizando archivo:", error.message);
+    res.status(500).json({ message: "Error actualizando archivo", error });
   }
 };
 
