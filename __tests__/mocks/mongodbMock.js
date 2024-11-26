@@ -8,10 +8,11 @@ module.exports = {
       find: jest.fn(),
       findOne: jest.fn(),
       save: jest.fn(),
+      findByIdAndUpdate: jest.fn(),
     },
     File: {
       find: jest.fn(),
-      save: jest.fn(),
+      save: jest.fn()
     },
   };
   
