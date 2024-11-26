@@ -1,16 +1,20 @@
+const mock_mysql = require('./mocks/mysqlMock');
+const mock_mongodb = require('./mocks/mongodbMock');
+
+jest.setTimeout(10000); 
+
+jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
+jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
+jest.setTimeout(10000); 
+
+
 const request = require('../backend/node_modules/supertest');
 const app = require("../backend/src/app"); //Verificar
 
 const bcrypt = require('../backend/node_modules/bcryptjs');
 const jwt = require('../backend/node_modules/jsonwebtoken');
 
-const mock_mysql = require('./mocks/mysqlMock');
-const mock_mongodb = require('./mocks/mongodbMock');
-
-// // jest.mock('../backend/src/DB/mysql', () => mock_mysql); 
-// // jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
-
-
+const mongoose = require('../backend/node_modules/mongoose');
 
 describe("Files Routes", () => {
     jest.mock('../backend/src/DB/mongodb', () => mock_mongodb); 
@@ -28,7 +32,7 @@ describe("Files Routes", () => {
             });
 
             const response = await request(app)
-                .post("/files/projectId/add")
+                .post("/api/files/projectId/add")
                 .attach("image", "__tests__/mocks/testImage.png") // Subir imagen de prueba (no olvidar)
                 .field("surname", "Test File")
                 .field("userId", "userId");
@@ -43,7 +47,7 @@ describe("Files Routes", () => {
             mock_mongodb.Project.findById.mockResolvedValue(null);
 
             const response = await request(app)
-                .post("/files/projectId/add")
+                .post("/api/files/projectId/add")
                 .attach("image", "__tests__/mocks/testImage.png")
                 .field("surname", "Test File")
                 .field("userId", "userId");
@@ -54,7 +58,7 @@ describe("Files Routes", () => {
 
         it("should return 400 if no file is uploaded", async () => {
             const response = await request(app)
-                .post("/files/projectId/add")
+                .post("/api/files/projectId/add")
                 .field("surname", "Test File")
                 .field("userId", "userId");
 
@@ -67,7 +71,7 @@ describe("Files Routes", () => {
         it("should return the file details by ID", async () => {
             mock_mongodb.File.findById.mockResolvedValue({ id: "fileId", surname: "Test File" });
 
-            const response = await request(app).get("/files/fileId");
+            const response = await request(app).get("/api/files/fileId");
 
             expect(response.status).toBe(200);
             expect(response.body.file.surname).toBe("Test File");
@@ -77,7 +81,7 @@ describe("Files Routes", () => {
         it("should return 404 if file is not found", async () => {
             mock_mongodb.File.findById.mockResolvedValue(null);
 
-            const response = await request(app).get("/files/fileId");
+            const response = await request(app).get("/api/files/fileId");
 
             expect(response.status).toBe(404);
             expect(response.body.message).toBe("File not found");
@@ -92,7 +96,7 @@ describe("Files Routes", () => {
             });
 
             const response = await request(app)
-                .put("/files/fileId/surname")
+                .put("/api/files/fileId/surname")
                 .send({ surname: "Updated Surname" });
 
             expect(response.status).toBe(200);
@@ -100,7 +104,7 @@ describe("Files Routes", () => {
         });
 
         it("should return 400 if surname is not provided", async () => {
-            const response = await request(app).put("/files/fileId/surname").send({});
+            const response = await request(app).put("/api/files/fileId/surname").send({});
 
             expect(response.status).toBe(400);
             expect(response.body.message).toBe("Surname is required");
@@ -115,7 +119,7 @@ describe("Files Routes", () => {
             });
 
             const response = await request(app)
-                .put("/files/fileId/status")
+                .put("/api/files/fileId/status")
                 .send({ status: "archived" });
 
             expect(response.status).toBe(200);
@@ -124,7 +128,7 @@ describe("Files Routes", () => {
 
         it("should return 400 if status is invalid", async () => {
             const response = await request(app)
-                .put("/files/fileId/status")
+                .put("/api/files/fileId/status")
                 .send({ status: "invalidStatus" });
 
             expect(response.status).toBe(400);
@@ -143,7 +147,7 @@ describe("Files Routes", () => {
             });
 
             const response = await request(app)
-                .put("/files/fileId/update")
+                .put("/api/files/fileId/update")
                 .attach("image", "__tests__/mocks/testImage.png")
                 .field("surname", "Updated Surname");
 
@@ -155,7 +159,7 @@ describe("Files Routes", () => {
             mock_mongodb.File.findByIdAndUpdate.mockResolvedValue(null);
 
             const response = await request(app)
-                .put("/files/fileId/update")
+                .put("/api/files/fileId/update")
                 .attach("image", "__test__/mocks/testImage.png")
                 .field("surname", "Updated Surname");
 
@@ -168,7 +172,7 @@ describe("Files Routes", () => {
         it("should delete the file successfully", async () => {
             mock_mongodb.File.findByIdAndDelete.mockResolvedValue({ id: "fileId" });
 
-            const response = await request(app).delete("/files/fileId");
+            const response = await request(app).delete("/api/files/fileId");
 
             expect(response.status).toBe(200);
             expect(response.body.message).toBe("File deleted successfully");
@@ -177,10 +181,11 @@ describe("Files Routes", () => {
         it("should return 404 if file is not found", async () => {
             mock_mongodb.File.findByIdAndDelete.mockResolvedValue(null);
 
-            const response = await request(app).delete("/files/fileId");
+            const response = await request(app).delete("/api/files/fileId");
 
             expect(response.status).toBe(404);
             expect(response.body.message).toBe("File not found");
         });
     });
 });
+
