@@ -6,11 +6,10 @@ const FileView = ({file}) => {
     <div className="file-view">
       {file ? (
       <>
-        <img src={file.url} alt={file.name} />
+        <img src={`http://localhost:4000${file.image}`} alt={file.surname} />
         <div className="image">
-          <p>Name: {file.name}</p>
-          <p>Type: {file.type}</p>
-          <p>Size: {(file.size / 1024).toFixed(2)} KB</p>
+          <p>File Name: {file.surname}</p>
+          <p>This image has {file.doorNumber} doors, {file.windowNumber} windows and {file.textNumber} texts.</p>
         </div>
         <div className="action-buttons">
         <div className="info">
@@ -28,9 +27,10 @@ const FileView = ({file}) => {
       </div>
       </>
       ): (
-        <p>No file selected</p>
+        <p>Please, press one click in a file</p>
       )}
     </div>
+
   );
 };
 

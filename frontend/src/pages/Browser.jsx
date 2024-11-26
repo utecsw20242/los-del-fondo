@@ -10,6 +10,20 @@ const Browser = ({ onFileSelect }) => {
   const contentInputRef = useRef(null);
   const folderInputRef = useRef(null);
 
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleToggleSortOptions = () => {
+    setShowSortOptions(!showSortOptions);
+  };
+
+  const handleSort = (field) => {
+    const isAscending = sortOption.field === field ? !sortOption.ascending : true;
+    setSortOption({ field, ascending: isAscending });
+    setShowSortOptions(false);
+  };
+
   const handleFileClick = (file) => {
     if (!file.file) return;
     onFileSelect({
@@ -44,6 +58,38 @@ const Browser = ({ onFileSelect }) => {
       }
       if (folder.files && folder.files.length) {
         return { ...folder, files: addFolderToParent(folder.files, parentId, newFolder) };
+      }
+      return folder;
+    });
+  };
+
+  const handleEditFolderName = (id, newName) => {
+    setFolders((folders) => editFolderNameRecursive(folders, id, newName));
+  };
+
+  const editFolderNameRecursive = (folders, id, newName) => {
+    return folders.map((folder) => {
+      if (folder.id === id) {
+        return { ...folder, name: newName, isEditing: false };
+      }
+      if (folder.files && folder.files.length) {
+        return { ...folder, files: editFolderNameRecursive(folder.files, id, newName) };
+      }
+      return folder;
+    });
+  };
+
+  const handleToggleEdit = (id) => {
+    setFolders((folders) => toggleEditRecursive(folders, id));
+  };
+
+  const toggleEditRecursive = (folders, id) => {
+    return folders.map((folder) => {
+      if (folder.id === id) {
+        return { ...folder, isEditing: !folder.isEditing };
+      }
+      if (folder.files && folder.files.length) {
+        return { ...folder, files: toggleEditRecursive(folder.files, id) };
       }
       return folder;
     });
@@ -178,6 +224,22 @@ const Browser = ({ onFileSelect }) => {
 
   return (
     <div className="browser">
+      <div className="search-bar">
+        <input
+          type="text"
+          placeholder="Search folders..."
+          value={searchTerm}
+          onChange={handleSearch}
+        />
+        <button onClick={handleToggleSortOptions}>Order By</button>
+        {showSortOptions && (
+          <div className="sort-options">
+            <button onClick={() => handleSort('name')}>Name</button>
+            <button onClick={() => handleSort('date')}>Date</button>
+            <button onClick={() => handleSort('size')}>Size</button>
+          </div>
+        )}
+      </div>
       <div className="folder-list">
         {renderFolders(sortedFolders)}
       </div>
