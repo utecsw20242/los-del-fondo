@@ -27,6 +27,7 @@ const ProjectSchema = new Schema({
 const FileSchema = new Schema({
   userId: { type: String, required: true },
   projectId: { type: mongoose.Types.ObjectId, ref: 'Project' }, 
+  name: { type: String, required: true },
   createdDate: { type: Date, default: Date.now },
   surname: { type: String },
   status: { type: String, enum: ["deleted", "bookmarked", "archived", "default"], default: "default" },
