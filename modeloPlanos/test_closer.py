@@ -2,9 +2,11 @@
 
 from ultralytics import YOLO
 import base64
+import math
+from scipy.spatial import cKDTree
 import cv2
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageFilter
 import pytesseract
 from io import BytesIO
 from collections import namedtuple
@@ -14,59 +16,14 @@ Box = namedtuple("Box", ["x1", "y1", "x2", "y2"])
 model = YOLO("blueprint.pt")
 
 
-def apply_model(coded_image):
-    decoded_image = base64.b64decode(coded_image)
-    image = Image.open(BytesIO(decoded_image))
-    image = image.convert("RGB")
-    image_numpy = np.array(image)
-    result = model.predict(image_numpy, conf=0.5, show_labels=False)
-    classes = result[0].boxes.cls.numpy()
-    matches = {}
-    names = result[0].names
-    for key, value in names.items():
-        matches[value + "s"] = 0
-
-    for i in classes:
-        matches[names[int(i)] + "s"] += 1
-
-    colors = {"window": (255, 0, 0), "text": (40, 40, 213), "door": (0, 153, 0)}
-    for i, box in enumerate(result[0].boxes.xyxy):
-        # Get box coordinates, class, and confidence
-        x1, y1, x2, y2 = map(int, box)
-        class_id = int(result[0].boxes.cls[i])
-        label = names[class_id]
-
-        # Draw the bounding box
-        cv2.rectangle(
-            image_numpy,
-            (x1, y1),
-            (x2, y2),
-            colors[label],
-            4,
-        )
-
-    image = Image.fromarray(image_numpy)
-    buffer = BytesIO()
-    image.save(buffer, format="PNG")
-    annotated_image_coded = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-    return matches, annotated_image_coded
-
-
 def calculate_center(box: Box):
-    """
-    Calculate the center of a rectangle.
-    """
+    """Calculate the center of a rectangle."""
     x_center = (box.x1 + box.x2) / 2
     y_center = (box.y1 + box.y2) / 2
     return (x_center, y_center)
 
 
 def is_angle_valid(angle):
-    """
-    Returns true if the angle is valid. To be valid it needs to be close to 90,
-    180, 270 or 360 angle
-    """
     valid_ranges = [(-10, 10), (80, 100), (170, 190), (260, 280)]
     for start, end in valid_ranges:
         if start <= angle <= end:
@@ -83,6 +40,29 @@ def calculate_angle(point1, point2):
 
 
 def find_closest_objects(texts, numbers):
+    """
+    Find the closest two objects for every object.
+
+    Args:
+    objects: List of Box, each containing the respective coordinates.
+
+    Returns:
+    Dictionary where keys are object indices and values are the indices of the two closest objects.
+    """
+    # Calculate centers of all objects. These are tuples of 2 value
+    # For now, we are doing it generaly, so combining texts and numbers
+
+    boxes = []
+    boxes.extend(texts)
+    boxes.extend(numbers)
+    centers = [calculate_center(box) for box in boxes]
+
+    tree = cKDTree(centers)
+
+    distances, indices = tree.query(centers, k=3)
+
+    closest_objects = {i: indices[i][1:3].tolist() for i in range(len(boxes))}
+
     centers1 = np.array([calculate_center(obj) for obj in texts])
     centers2 = np.array([calculate_center(obj) for obj in numbers])
 
@@ -127,9 +107,6 @@ def is_number(string):
 
 
 def score(coded_image):
-    """
-    The score is the percent of rooms that have corresponding measures
-    """
     decoded_image = base64.b64decode(coded_image)
     image = Image.open(BytesIO(decoded_image))
     image = image.convert("RGB")
@@ -160,6 +137,7 @@ def score(coded_image):
                 rotation_angle = osd_data["rotate"]
 
                 if rotation_angle != 0 and rotation_angle != 180:
+                    print("rotation needed")
                     croped_image = croped_image.rotate(rotation_angle, expand=True)
 
                 config = r"--oem 0 --psm 7 -c min_characters_to_try=1"
@@ -176,9 +154,37 @@ def score(coded_image):
                     texts_translated.append(line)
             except pytesseract.pytesseract.TesseractError as e:
                 print("Error: ", e)
+                # croped_image.show()
 
+    print(len(texts))
+    print(texts)
+    print(texts_translated)
+    print(numbers)
+    print(numbers_translated)
     closest_objects = find_closest_objects(texts, numbers)
+    print(closest_objects)
 
+    # cropped_image = image.crop((texts[10].x1, texts[10].y1, texts[10].x2, texts[10].y2))
+
+    # cropped_image.show()
+
+    # config = "--psm 0 -c min_characters_to_try=1"
+    # osd_data = pytesseract.image_to_osd(
+    #     cropped_image, output_type=pytesseract.Output.DICT, config=config
+    # )
+    # print(osd_data)
+    # rotation_angle = osd_data["rotate"]
+
+    # print(rotation_angle)
+    # if rotation_angle > 0 and rotation_angle != 180:
+    #     print("rotation needed")
+    #     corrected_image = cropped_image.rotate(rotation_angle, expand=True)
+    # else:
+    #     corrected_image = cropped_image
+    # corrected_image.show()
+
+    # if every text has an available measure
+    # Doesn't really work. Needs to be fixed
     possible = 0
     for i in closest_objects:
         if len(i) == 2:
@@ -186,6 +192,6 @@ def score(coded_image):
 
     possible_percent = (
         possible / len(closest_objects) if len(closest_objects) > 0 else 0
-    ) * 100
+    )
 
     return possible_percent
